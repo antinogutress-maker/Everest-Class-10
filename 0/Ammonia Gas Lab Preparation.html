@@ -1,0 +1,560 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Lab: Preparation of Ammonia Gas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for scientific formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #020617; /* Very dark slate */
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+        }
+        .nepali-text {
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 22px; width: 22px;
+            border-radius: 50%; background: #fb923c; cursor: pointer; margin-top: -8px;
+            box-shadow: 0 0 15px rgba(251, 146, 60, 0.8);
+            border: 2px solid #fff;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: #334155; border-radius: 3px;
+        }
+
+        /* Dashboard Cards */
+        .dash-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        /* Realistic Flame Animation - Anchored precisely to the burner tip */
+        @keyframes flicker {
+            0%   { transform: scaleX(0.95) scaleY(0.95) skewX(-2deg); opacity: 0.85; }
+            50%  { transform: scaleX(1.05) scaleY(1.05) skewX(2deg); opacity: 1.0; }
+            100% { transform: scaleX(0.98) scaleY(0.98) skewX(-1deg); opacity: 0.9; }
+        }
+        .flame-active {
+            transform-origin: 225px 430px; /* Exactly at the burner tip */
+            animation: flicker 0.15s ease-in-out infinite alternate;
+        }
+
+        /* R.B Flask Reaction Animations */
+        @keyframes fume-swirl {
+            0% { transform: translate(0, 0) scale(0.8) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translate(-10px, -20px) scale(1.2) rotate(45deg); opacity: 0; }
+        }
+        .fume-anim {
+            animation: fume-swirl 2.5s infinite ease-in-out;
+            transform-origin: center;
+        }
+
+        @keyframes bubble-pop {
+            0% { transform: translateY(0) scale(0.5); opacity: 1; }
+            100% { transform: translateY(-10px) scale(1.5); opacity: 0; }
+        }
+        .bubble-anim {
+            animation: bubble-pop 0.8s infinite ease-out;
+        }
+        
+        /* Particle effects */
+        .particle-nh3 { filter: drop-shadow(0 0 3px #60a5fa); }
+        .particle-h2o { filter: drop-shadow(0 0 2px #ffffff); opacity: 0.8; }
+        
+        /* Smooth Transitions */
+        #nh3-gas-fill { transition: height 0.2s linear, y 0.2s linear; }
+        #reaction-fumes, #bubbling-mixture { transition: opacity 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <div class="max-w-6xl w-full space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-500">
+                Laboratory Preparation of Ammonia (\(NH_3\))
+            </h1>
+            <p class="text-xl text-slate-400 nepali-text not-italic">प्रयोगशालामा एमोनिया ग्यासको निर्माण</p>
+        </header>
+
+        <!-- 1. TOP CONTROLS -->
+        <section class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl border-t border-orange-500/30">
+            <!-- Heat Control -->
+            <div class="w-full md:w-1/2 space-y-3">
+                <div class="flex justify-between text-sm font-bold text-orange-400">
+                    <span>Bunsen Burner Heat</span>
+                    <span id="heat-val" class="text-white font-mono bg-slate-900 px-3 py-1 rounded border border-slate-700">OFF</span>
+                </div>
+                <input type="range" id="heat-slider" min="0" max="100" value="0">
+            </div>
+
+            <!-- Reaction Status & Reset -->
+            <div class="w-full md:w-1/2 flex justify-between items-center bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <div>
+                    <span class="text-sm font-bold text-emerald-400 block" id="reaction-status">Waiting for heat...</span>
+                    <span class="text-[10px] text-slate-400">Mixture requires heat to react</span>
+                </div>
+                <button id="btn-reset" class="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-lg font-bold text-white text-sm uppercase transition shadow">
+                    Reset Lab
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. FLAWLESS REALISTIC SIMULATION CANVAS -->
+        <section class="w-full bg-[#080c14] rounded-2xl border-2 border-slate-800 relative h-[550px] overflow-hidden shadow-2xl flex justify-center items-end pb-4">
+            
+            <svg id="lab-canvas" width="100%" height="100%" viewBox="0 0 900 550" preserveAspectRatio="xMidYMax meet">
+                <defs>
+                    <!-- Glass Shine Gradient -->
+                    <linearGradient id="glass-shine" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+                        <stop offset="20%" stop-color="rgba(255,255,255,0.4)" />
+                        <stop offset="40%" stop-color="rgba(255,255,255,0.0)" />
+                        <stop offset="80%" stop-color="rgba(255,255,255,0.0)" />
+                        <stop offset="100%" stop-color="rgba(255,255,255,0.15)" />
+                    </linearGradient>
+                    <!-- Solid Iron Gradient for Stands -->
+                    <linearGradient id="iron-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#334155" />
+                        <stop offset="50%" stop-color="#64748b" />
+                        <stop offset="100%" stop-color="#1e293b" />
+                    </linearGradient>
+                    <!-- Chemical Mixture Gradient -->
+                    <linearGradient id="mix-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#e2e8f0" />
+                        <stop offset="100%" stop-color="#94a3b8" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Background Grid -->
+                <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+                    <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse"><path d="M 25 0 L 0 0 0 25" fill="none"/></pattern>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                </g>
+
+                <!-- IRON STANDS & CLAMPS -->
+                <g id="apparatus-stands">
+                    <!-- Left Stand (Holding Flask) -->
+                    <rect x="360" y="200" width="14" height="320" fill="url(#iron-grad)"/>
+                    <rect x="320" y="520" width="94" height="12" fill="url(#iron-grad)" rx="4"/>
+                    <!-- Clamp holding the Flask neck -->
+                    <rect x="300" y="325" width="60" height="12" fill="url(#iron-grad)"/>
+                    <path d="M 270 320 L 300 325 L 300 337 L 270 342 Z" fill="url(#iron-grad)"/>
+
+                    <!-- Right Stand (Holding Tower & Jar) -->
+                    <rect x="750" y="80" width="14" height="440" fill="url(#iron-grad)"/>
+                    <rect x="710" y="520" width="94" height="12" fill="url(#iron-grad)" rx="4"/>
+                    <!-- Clamp for Drying Tower -->
+                    <rect x="670" y="320" width="80" height="10" fill="url(#iron-grad)"/>
+                    <!-- Clamp for Gas Jar -->
+                    <rect x="650" y="140" width="100" height="10" fill="url(#iron-grad)"/>
+                </g>
+
+                <!-- HEATING APPARATUS (Tripod, Gauze, Burner) -->
+                <g id="heating-system">
+                    <!-- Tripod Stand -->
+                    <path d="M 160 520 L 185 355 L 265 355 L 290 520" fill="none" stroke="#475569" stroke-width="7" stroke-linejoin="round"/>
+                    <line x1="225" y1="355" x2="225" y2="520" stroke="#334155" stroke-width="7"/> <!-- Back leg -->
+                    <!-- Wire Gauze (y = 355, exactly below the flask) -->
+                    <rect x="160" y="350" width="130" height="8" fill="#94a3b8"/>
+                    <pattern id="gauze" width="4" height="4" patternUnits="userSpaceOnUse">
+                        <path d="M 4 0 L 0 4 M 0 0 L 4 4" stroke="#475569" stroke-width="0.5"/>
+                    </pattern>
+                    <rect x="160" y="350" width="130" height="8" fill="url(#gauze)"/>
+                    
+                    <!-- Bunsen Burner -->
+                    <path d="M 212 430 L 238 430 L 238 500 L 212 500 Z" fill="url(#iron-grad)"/> <!-- Pipe Top is exactly at y=430 -->
+                    <path d="M 195 520 L 255 520 L 245 490 L 205 490 Z" fill="#64748b"/> <!-- Base -->
+                    <!-- Gas Tube -->
+                    <path d="M 240 480 Q 280 490 290 550" fill="none" stroke="#1e293b" stroke-width="8"/>
+                    
+                    <!-- The Flame (Originates at burner top y=430, touches gauze y=355) -->
+                    <g id="burner-flame" opacity="0">
+                        <!-- Outer Flame (Yellow/Orange) -->
+                        <path d="M 210 430 Q 200 380 225 355 Q 250 380 240 430 Z" fill="rgba(245, 158, 11, 0.8)"/>
+                        <!-- Inner Flame (Blue) -->
+                        <path d="M 217 430 Q 215 395 225 380 Q 235 395 233 430 Z" fill="rgba(56, 189, 248, 0.9)"/>
+                    </g>
+                </g>
+
+                <!-- ROUND BOTTOM FLASK (Perfectly Tilted Downwards) -->
+                <!-- Center of rotation is at (225, 305). Radius 50. Bottom edge is at 355 (Resting exactly on gauze) -->
+                <g id="rb-flask" transform="translate(225, 305) rotate(22)">
+                    
+                    <!-- Solid Chemical Mixture -->
+                    <path d="M -42 22 A 48 48 0 0 0 42 22 L -42 22 Z" fill="url(#mix-grad)"/>
+                    <text x="0" y="10" fill="#475569" font-size="12" text-anchor="middle" font-weight="bold">NH₄Cl + Ca(OH)₂</text>
+
+                    <!-- REACTION ANIMATIONS (Visible when heated) -->
+                    <g id="bubbling-mixture" opacity="0">
+                        <!-- Bubbles popping on the surface -->
+                        <circle cx="-20" cy="20" r="2.5" fill="#ffffff" class="bubble-anim" style="animation-delay: 0.1s"/>
+                        <circle cx="-5" cy="22" r="3" fill="#ffffff" class="bubble-anim" style="animation-delay: 0.4s"/>
+                        <circle cx="15" cy="18" r="2" fill="#ffffff" class="bubble-anim" style="animation-delay: 0.7s"/>
+                        <circle cx="25" cy="20" r="3" fill="#ffffff" class="bubble-anim" style="animation-delay: 0.2s"/>
+                    </g>
+                    
+                    <g id="reaction-fumes" opacity="0">
+                        <!-- Swirling Gas Clouds inside the flask -->
+                        <circle cx="-10" cy="-5" r="18" fill="rgba(255,255,255,0.4)" class="fume-anim" style="animation-delay: 0s;"/>
+                        <circle cx="15" cy="-10" r="15" fill="rgba(96,165,250,0.3)" class="fume-anim" style="animation-delay: 0.5s;"/>
+                        <circle cx="0" cy="-20" r="20" fill="rgba(255,255,255,0.2)" class="fume-anim" style="animation-delay: 1s;"/>
+                    </g>
+
+                    <!-- Glass Bulb & Neck -->
+                    <circle cx="0" cy="0" r="50" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="3"/>
+                    <rect x="45" y="-14" width="60" height="28" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="3"/>
+                    <line x1="45" y1="-14" x2="45" y2="14" stroke="#080c14" stroke-width="4"/> <!-- Erase inner boundary -->
+                    <path d="M 105 -18 L 105 18" stroke="rgba(255,255,255,0.6)" stroke-width="5"/> <!-- Rim -->
+
+                    <!-- Rubber Cork -->
+                    <rect x="100" y="-12" width="20" height="24" fill="#78350f"/>
+                    
+                    <!-- Glass Shine -->
+                    <circle cx="0" cy="0" r="50" fill="url(#glass-shine)" style="pointer-events: none;"/>
+                </g>
+
+                <!-- DRYING TOWER (Two Chambers with Quicklime) -->
+                <g id="drying-tower" transform="translate(620, 240)">
+                    
+                    <!-- Lower Chamber (Bulb) -->
+                    <rect x="-40" y="80" width="80" height="100" rx="15" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="3"/>
+                    <!-- Upper Chamber -->
+                    <rect x="-40" y="-30" width="80" height="80" rx="15" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="3"/>
+                    <!-- Connecting Neck -->
+                    <rect x="-15" y="50" width="30" height="30" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="3"/>
+                    <!-- Erase overlaps -->
+                    <line x1="-15" y1="50" x2="15" y2="50" stroke="#080c14" stroke-width="4"/>
+                    <line x1="-15" y1="80" x2="15" y2="80" stroke="#080c14" stroke-width="4"/>
+                    
+                    <!-- Quicklime (CaO) Granules -->
+                    <g id="quicklime-granules">
+                        <!-- Bulk Fill -->
+                        <path d="M -37 130 L 37 130 L 37 177 Q 37 180 34 180 L -34 180 Q -37 180 -37 177 Z" fill="#cbd5e1"/>
+                        <!-- Textured pebbles -->
+                        <circle cx="-20" cy="140" r="4" fill="#94a3b8"/><circle cx="10" cy="150" r="5" fill="#64748b"/>
+                        <circle cx="25" cy="165" r="4" fill="#475569"/><circle cx="-15" cy="170" r="6" fill="#f8fafc"/>
+                        <circle cx="0" cy="155" r="3" fill="#94a3b8"/><circle cx="-28" cy="160" r="4" fill="#64748b"/>
+                        <!-- Label -->
+                        <text x="50" y="155" fill="#94a3b8" font-size="12" font-weight="bold">Quicklime (CaO)</text>
+                        <line x1="45" y1="150" x2="25" y2="150" stroke="#94a3b8" stroke-width="1.5"/>
+                    </g>
+                    
+                    <!-- Side Cork (Inlet for Delivery Tube 1) -->
+                    <path d="M -55 135 L -40 132 L -40 148 L -55 145 Z" fill="#78350f"/>
+                    
+                    <!-- Top Cork (Outlet for Delivery Tube 2) -->
+                    <rect x="-18" y="-42" width="36" height="12" fill="#78350f"/>
+
+                    <!-- Glass Reflections -->
+                    <rect x="-40" y="80" width="80" height="100" rx="15" fill="url(#glass-shine)" style="pointer-events: none;"/>
+                    <rect x="-40" y="-30" width="80" height="80" rx="15" fill="url(#glass-shine)" style="pointer-events: none;"/>
+                </g>
+
+                <!-- INVERTED GAS JAR -->
+                <g id="gas-jar" transform="translate(620, 110)">
+                    <!-- Jar Body -->
+                    <path d="M -35 50 L -35 -70 Q -35 -90 0 -90 Q 35 -90 35 -70 L 35 50" fill="rgba(255,255,255,0.02)"/>
+                    
+                    <!-- Dynamic NH3 Gas Fill -->
+                    <rect id="nh3-gas-fill" x="-32" y="-87" width="64" height="0" fill="rgba(96, 165, 250, 0.3)"/>
+                    
+                    <!-- Glass Outline -->
+                    <path d="M -35 50 L -35 -70 Q -35 -90 0 -90 Q 35 -90 35 -70 L 35 50" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="4"/>
+                    <!-- Open Bottom Rim -->
+                    <path d="M -40 50 L 40 50" stroke="rgba(255,255,255,0.6)" stroke-width="6"/> 
+                    
+                    <text x="65" y="-50" fill="#93c5fd" font-size="14" font-weight="bold">Dry NH₃ Gas</text>
+                    <text x="-50" y="80" fill="#cbd5e1" font-size="12" text-anchor="middle">Air pushed out</text>
+                    <path d="M -35 70 L -35 90 M -25 85 L -35 95 L -45 85" fill="none" stroke="#cbd5e1" stroke-width="2"/> <!-- Arrow -->
+
+                    <rect x="-35" y="-88" width="70" height="138" fill="url(#glass-shine)" style="pointer-events: none;"/>
+                </g>
+
+                <!-- DELIVERY TUBES & PARTICLE PATHS -->
+                <g id="delivery-system">
+                    <!-- Visible Tube 1 Outline (Starts at cork) -->
+                    <path d="M 331 348 C 400 375, 450 420, 570 380" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="8"/>
+                    
+                    <!-- HIDDEN TRACKING PATH: Starts deep inside the flask bulb at center (225, 305) -->
+                    <!-- Particles will flow straight down the neck then follow the curve -->
+                    <path id="path-tube-1" d="M 225 305 L 331 348 C 400 375, 450 420, 570 380" fill="none" stroke="transparent" stroke-width="2"/>
+
+                    <!-- Tube 2 Outline (Tower up to Jar) -->
+                    <path d="M 620 198 L 620 40" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="8"/>
+                    <!-- Tube 2 Hollow Core -->
+                    <path id="path-tube-2" d="M 620 198 L 620 40" fill="none" stroke="transparent" stroke-width="2"/>
+                </g>
+
+                <!-- DYNAMIC PARTICLES LAYER -->
+                <g id="particles-layer"></g>
+                
+                <!-- Apparatus Labels -->
+                <text x="140" y="230" fill="#94a3b8" font-size="14" font-weight="bold">R.B. Flask</text>
+                <text x="450" y="355" fill="#94a3b8" font-size="12">Delivery Tube</text>
+                
+            </svg>
+        </section>
+
+        <!-- 3. LIVE DASHBOARD (Chemical Reactions & Stats) -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Live Metrics -->
+            <div class="dash-card p-5 rounded-2xl flex flex-col justify-center gap-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <div>
+                        <span class="block text-sm font-bold text-orange-400">Flask Temperature</span>
+                        <span class="text-[10px] text-slate-500">Bubbling and fuming starts at ~100°C</span>
+                    </div>
+                    <span id="temp-val" class="text-3xl font-mono text-white font-bold">25°C</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="block text-sm font-bold text-blue-400">NH₃ Collected</span>
+                        <span class="text-[10px] text-slate-500">Collected by downward displacement of air</span>
+                    </div>
+                    <span id="gas-vol" class="text-3xl font-mono text-white font-bold">0%</span>
+                </div>
+            </div>
+
+            <!-- Chemical Equations -->
+            <div class="dash-card p-5 rounded-2xl flex flex-col justify-center gap-4">
+                <div class="border-l-4 border-orange-500 pl-3">
+                    <p class="text-[10px] uppercase font-bold text-orange-400 tracking-wider">Heating Reaction (In R.B. Flask)</p>
+                    <p class="font-mono text-slate-200 text-sm mt-1">\( 2NH_4Cl + Ca(OH)_2 \xrightarrow{\Delta} CaCl_2 + 2H_2O + 2NH_3 \uparrow \)</p>
+                </div>
+                <div class="border-l-4 border-slate-400 pl-3">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Drying Reaction (In Quicklime Tower)</p>
+                    <p class="font-mono text-slate-200 text-sm mt-1">\( CaO + H_2O \rightarrow Ca(OH)_2 \)</p>
+                    <p class="text-[10px] text-slate-400 mt-1">*Moisture (H₂O) is absorbed, pure NH₃ passes up.</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 4. Conclusion -->
+        <section class="glass-panel p-6 rounded-2xl mb-12 border-l-4 border-rose-500">
+            <h2 class="text-2xl font-semibold text-rose-400 mb-4">Conclusion</h2>
+            <div class="space-y-4 bg-slate-900/80 p-6 rounded-xl border border-slate-700">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> In conclusion, the laboratory preparation of ammonia involves heating a solid mixture of ammonium chloride and calcium hydroxide in a Round Bottom (R.B.) flask. Upon reaching the reaction temperature, the mixture visibly reacts to produce ammonia gas and water vapor. This wet gas passes through a drying tower filled with Quicklime (calcium oxide) which chemically absorbs the moisture. Finally, because pure ammonia gas is lighter than air, it is collected by the <strong>downward displacement of air</strong> in an inverted dry gas jar.
+                </p>
+                <p class="nepali-text text-lg leading-relaxed border-t border-slate-700 pt-4">
+                    <strong>नेपाली:</strong> निष्कर्षमा, प्रयोगशालामा एमोनिया ग्यास बनाउन राउन्ड बटम (R.B.) फ्लास्कमा एमोनियम क्लोराइड र क्याल्सियम हाइड्रोक्साइडको ठोस मिश्रणलाई तताइन्छ। प्रतिक्रिया तापक्रममा पुगेपछि, मिश्रणले एमोनिया ग्यास र पानीको बाफ निकाल्न थाल्छ। यो ग्यास क्विकलाइम (क्याल्सियम अक्साइड) भरिएको ड्राइङ टावरबाट पठाइन्छ जसले रासायनिक रूपमा ओसिलोपन सोस्छ। अन्ततः, शुद्ध एमोनिया ग्यास हावा भन्दा हलुका हुने भएकोले, यसलाई उल्टो सुख्खा ग्यास जारमा हावालाई तल धकेलेर (<strong>Downward displacement of air</strong>) जम्मा गरिन्छ।
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Virtual Lab Physics & Animation Engine -->
+    <script>
+        // DOM Elements
+        const heatSlider = document.getElementById('heat-slider');
+        const heatValText = document.getElementById('heat-val');
+        const burnerFlame = document.getElementById('burner-flame');
+        const tempValText = document.getElementById('temp-val');
+        const gasVolText = document.getElementById('gas-vol');
+        const reactionStatus = document.getElementById('reaction-status');
+        const btnReset = document.getElementById('btn-reset');
+        
+        const nh3GasFill = document.getElementById('nh3-gas-fill');
+        const bubblingMixture = document.getElementById('bubbling-mixture');
+        const reactionFumes = document.getElementById('reaction-fumes');
+        const particlesLayer = document.getElementById('particles-layer');
+        
+        // Exact SVG Paths for particle tracking
+        const pathTube1 = document.getElementById('path-tube-1');
+        const pathTube2 = document.getElementById('path-tube-2');
+        const p1Len = pathTube1.getTotalLength();
+        const p2Len = pathTube2.getTotalLength();
+
+        // Lab State Variables
+        let currentTemp = 25; // °C
+        let targetTemp = 25;
+        let gasCollected = 0; // %
+        const REACTION_TEMP = 100; // Temp where bubbling/fumes start
+        
+        let activeParticles = [];
+        let labAnimFrame;
+        let lastTime = 0;
+
+        // Particle Spawner
+        function spawnParticle() {
+            const isWater = Math.random() < 0.4; 
+            
+            const p = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            p.setAttribute("r", 2.5);
+            
+            if (isWater) {
+                p.setAttribute("fill", "#ffffff");
+                p.setAttribute("class", "particle-h2o");
+            } else {
+                p.setAttribute("fill", "#60a5fa");
+                p.setAttribute("class", "particle-nh3");
+            }
+            
+            particlesLayer.appendChild(p);
+            
+            const speed = 100 + Math.random() * 80; 
+            
+            activeParticles.push({
+                el: p,
+                type: isWater ? 'H2O' : 'NH3',
+                stage: 1, 
+                distance: 0,
+                speed: speed,
+                wobbleOffset: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Main Physics Loop
+        function runLab(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = (timestamp - lastTime) / 1000; 
+            lastTime = timestamp;
+
+            const heatInput = parseInt(heatSlider.value); 
+            
+            // 1. Burner & Heat Physics
+            if (heatInput === 0) {
+                heatValText.innerText = "OFF";
+                heatValText.className = "text-slate-400 font-mono bg-slate-900 px-3 py-1 rounded border border-slate-700";
+                burnerFlame.setAttribute("opacity", "0");
+                burnerFlame.classList.remove("flame-active");
+                targetTemp = 25; 
+            } else {
+                heatValText.innerText = heatInput + "%";
+                heatValText.className = "text-orange-400 font-mono bg-slate-900 px-3 py-1 rounded border border-orange-900";
+                
+                // Opacity scales with heat, size remains mathematically anchored
+                const opacity = 0.5 + (heatInput / 200);
+                burnerFlame.setAttribute("opacity", opacity);
+                
+                if(!burnerFlame.classList.contains("flame-active")) {
+                    burnerFlame.classList.add("flame-active");
+                }
+                
+                targetTemp = 25 + (heatInput * 2.25);
+            }
+
+            // Smooth Temperature transition
+            if (currentTemp < targetTemp) currentTemp += 25 * dt; 
+            if (currentTemp > targetTemp) currentTemp -= 10 * dt; 
+            tempValText.innerText = currentTemp.toFixed(0) + "°C";
+
+            // 2. Chemical Reaction Logic
+            if (currentTemp > REACTION_TEMP && gasCollected < 100) {
+                const reactionRate = (currentTemp - REACTION_TEMP) / 150; 
+                
+                reactionStatus.innerText = "Reaction in progress! Bubbling...";
+                reactionStatus.className = "text-sm font-bold text-orange-400 block animate-pulse";
+                
+                // Show boiling and fumes inside R.B. Flask
+                bubblingMixture.style.opacity = "1";
+                reactionFumes.style.opacity = "1";
+                
+                // Spawn particles flowing into tube
+                if (Math.random() < reactionRate * 0.8) {
+                    spawnParticle();
+                }
+            } else if (gasCollected >= 100) {
+                reactionStatus.innerText = "Gas Jar is FULL!";
+                reactionStatus.className = "text-sm font-bold text-emerald-400 block";
+                bubblingMixture.style.opacity = "0";
+                reactionFumes.style.opacity = "0";
+            } else {
+                reactionStatus.innerText = "Heating... waiting for ~100°C";
+                reactionStatus.className = "text-sm font-bold text-slate-400 block";
+                bubblingMixture.style.opacity = "0";
+                reactionFumes.style.opacity = "0";
+            }
+
+            // 3. Move Particles along SVG Paths
+            for (let i = activeParticles.length - 1; i >= 0; i--) {
+                let p = activeParticles[i];
+                p.distance += p.speed * dt;
+                
+                if (p.stage === 1) {
+                    if (p.distance >= p1Len) {
+                        if (p.type === 'H2O') {
+                            p.el.remove();
+                            activeParticles.splice(i, 1);
+                            continue;
+                        } else {
+                            p.stage = 2;
+                            p.distance = 0;
+                            p.speed = 120; 
+                        }
+                    } else {
+                        const point = pathTube1.getPointAtLength(p.distance);
+                        const wobble = Math.sin((p.distance * 0.1) + p.wobbleOffset) * 1.5;
+                        p.el.setAttribute("cx", point.x);
+                        p.el.setAttribute("cy", point.y + wobble);
+                    }
+                } else if (p.stage === 2) {
+                    if (p.distance >= p2Len) {
+                        p.el.remove();
+                        activeParticles.splice(i, 1);
+                        
+                        if (gasCollected < 100) {
+                            gasCollected += 0.4; 
+                            if (gasCollected > 100) gasCollected = 100;
+                            
+                            gasVolText.innerText = gasCollected.toFixed(0) + "%";
+                            const fillHeight = (gasCollected / 100) * 138;
+                            nh3GasFill.setAttribute('height', fillHeight);
+                        }
+                    } else {
+                        const point = pathTube2.getPointAtLength(p.distance);
+                        const wobble = Math.sin((p.distance * 0.15) + p.wobbleOffset) * 1.5;
+                        p.el.setAttribute("cx", point.x + wobble);
+                        p.el.setAttribute("cy", point.y);
+                    }
+                }
+            }
+
+            labAnimFrame = requestAnimationFrame(runLab);
+        }
+
+        // Reset Button
+        btnReset.addEventListener('click', () => {
+            heatSlider.value = 0;
+            currentTemp = 25;
+            targetTemp = 25;
+            gasCollected = 0;
+            
+            gasVolText.innerText = "0%";
+            nh3GasFill.setAttribute('height', 0);
+            
+            activeParticles.forEach(p => p.el.remove());
+            activeParticles = [];
+        });
+
+        // Start Physics Engine
+        labAnimFrame = requestAnimationFrame(runLab);
+
+    </script>
+</body>
+</html>
