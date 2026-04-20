@@ -1,0 +1,410 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity vs Gravitational Force</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for scientific formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #020617; /* Very dark slate for space */
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .nepali-text {
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+        /* Buttons */
+        .btn-action {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+        .btn-action:active { transform: scale(0.95); }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #64748b, #475569);
+            transition: transform 0.2s;
+        }
+        .btn-reset:active { transform: scale(0.95); }
+
+        /* Planet Gradients */
+        .grad-earth { background: linear-gradient(to bottom, #3b82f6, #1e3a8a); }
+        .grad-moon { background: linear-gradient(to bottom, #94a3b8, #334155); }
+        .grad-jupiter { background: linear-gradient(to bottom, #d97706, #78350f); }
+
+        /* Radio Tabs */
+        .tab-radio:checked + label {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #60a5fa;
+        }
+        
+        /* Impact dust animation */
+        @keyframes dust-burst {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        .dust {
+            transform-origin: center bottom;
+            animation: dust-burst 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                Gravity vs Gravitational Force
+            </h1>
+            <p class="text-xl text-slate-400 nepali-text not-italic">गुरुत्वबल र गुरुत्वाकर्षण बल</p>
+        </header>
+
+        <!-- 1. Objective -->
+        <section class="glass-panel p-6 rounded-2xl border-l-4 border-cyan-500">
+            <h2 class="text-2xl font-semibold text-cyan-300 mb-4">1. Objective of Learning</h2>
+            <div class="space-y-4">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> The objective is to eliminate the common confusion between two distinct scientific terms. Students will learn that <em>Gravitation</em> is the universal attraction between <em>any</em> two objects (like two apples), while <em>Gravity</em> is the specific pulling force a massive heavenly body (like Earth) exerts on objects near its surface. In real life, understanding Gravity helps us design airplanes, estimate safe falling distances, and calculate the weight of objects on different planets.
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> यसको मुख्य उद्देश्य दुई फरक वैज्ञानिक शब्दहरू बीचको सामान्य भ्रम हटाउनु हो। विद्यार्थीहरूले बुझ्नेछन् कि <em>गुरुत्वाकर्षण (Gravitation)</em> भनेको कुनै पनि दुई वस्तुहरू (जस्तै दुईवटा स्याउ) बीचको विश्वव्यापी आकर्षण हो, जबकि <em>गुरुत्वबल (Gravity)</em> भनेको पृथ्वी जस्ता ठूला आकाशीय पिण्डले आफ्नो सतह नजिकका वस्तुहरूलाई तान्ने विशेष बल हो। वास्तविक जीवनमा, गुरुत्वबल बुझ्नाले हामीलाई हवाइजहाज डिजाइन गर्न, सुरक्षित खसाइको दूरी अनुमान गर्न, र विभिन्न ग्रहहरूमा वस्तुहरूको तौल गणना गर्न मद्दत गर्दछ।
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. Simulation -->
+        <section class="glass-panel p-6 rounded-2xl flex flex-col lg:flex-row gap-8">
+            
+            <!-- Controls Sidebar -->
+            <div class="w-full lg:w-1/3 space-y-6 flex flex-col">
+                <h2 class="text-2xl font-semibold text-cyan-300">2. Free Fall Drop Test</h2>
+                <p class="text-sm text-slate-300">Select a heavenly body and drop the meteor. Observe how the specific Gravity (\(g\)) affects its acceleration and fall speed.</p>
+                
+                <!-- Planet Selection -->
+                <div class="flex flex-col space-y-2">
+                    <label class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Select Heavenly Body:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <input type="radio" name="planet" id="p-earth" value="earth" class="hidden tab-radio" checked>
+                            <label for="p-earth" class="block text-center p-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition">Earth</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="planet" id="p-moon" value="moon" class="hidden tab-radio">
+                            <label for="p-moon" class="block text-center p-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition">Moon</label>
+                        </div>
+                        <div>
+                            <input type="radio" name="planet" id="p-jupiter" value="jupiter" class="hidden tab-radio">
+                            <label for="p-jupiter" class="block text-center p-2 rounded-lg border border-slate-600 cursor-pointer hover:bg-slate-700 transition">Jupiter</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Dashboard -->
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-4 flex-grow">
+                    <!-- Current Gravity -->
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-slate-400 text-sm">Gravity (\(g\))</span>
+                        <span id="stat-g" class="text-xl font-bold text-blue-400 font-mono">9.8 m/s²</span>
+                    </div>
+                    <!-- Live Velocity -->
+                    <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                        <span class="text-slate-400 text-sm">Fall Speed (\(v\))</span>
+                        <span id="stat-v" class="text-xl font-bold text-emerald-400 font-mono">0.0 m/s</span>
+                    </div>
+                    <!-- Force (Weight) -->
+                    <div class="flex justify-between items-center pb-2">
+                        <span class="text-slate-400 text-sm">Weight Force (\(F = mg\))</span>
+                        <span id="stat-w" class="text-xl font-bold text-rose-400 font-mono">98.0 N</span>
+                    </div>
+                    <p class="text-xs text-slate-500 italic mt-2">*Assuming meteor mass \(m = 10 \text{ kg}\)</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                    <button id="btn-drop" class="btn-action flex-1 py-3 rounded-xl font-bold text-white text-lg tracking-wide uppercase">
+                        Drop Object
+                    </button>
+                    <button id="btn-reset" class="btn-reset px-6 py-3 rounded-xl font-bold text-white uppercase tracking-wide">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- SVG Visualizer (Main Simulation) -->
+            <div class="w-full lg:w-2/3 flex flex-col gap-4">
+                
+                <!-- Gravity Drop Canvas -->
+                <div class="bg-black rounded-xl border border-slate-700 relative overflow-hidden flex items-end justify-center h-[400px]">
+                    <svg id="sim-canvas" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Space Stars -->
+                        <g fill="#ffffff" opacity="0.3">
+                            <circle cx="10%" cy="10%" r="1" /><circle cx="40%" cy="30%" r="1.5" />
+                            <circle cx="80%" cy="20%" r="1" /><circle cx="60%" cy="50%" r="2" />
+                            <circle cx="20%" cy="60%" r="1" /><circle cx="90%" cy="70%" r="1.2" />
+                        </g>
+
+                        <!-- Measurement Scale -->
+                        <g stroke="#334155" stroke-width="1" stroke-dasharray="2,2">
+                            <line x1="50" y1="50" x2="100%" y2="50" />
+                            <text x="10" y="55" fill="#64748b" font-size="12">0 m</text>
+                            
+                            <line x1="50" y1="200" x2="100%" y2="200" />
+                            <text x="10" y="205" fill="#64748b" font-size="12">15 m</text>
+                        </g>
+
+                        <!-- The Planet Surface -->
+                        <rect id="planet-surface" x="0" y="320" width="100%" height="80" class="grad-earth" />
+                        
+                        <!-- Falling Object (Meteor) Group -->
+                        <g id="falling-object" transform="translate(400, 50)">
+                            <!-- Force Arrow (Gravity) -->
+                            <line id="force-arrow" x1="0" y1="15" x2="0" y2="60" stroke="#f43f5e" stroke-width="4" />
+                            <polygon id="force-head" points="-6,50 6,50 0,60" fill="#f43f5e" />
+                            <text id="force-label" x="15" y="45" fill="#f43f5e" font-weight="bold" font-size="12">Gravity</text>
+
+                            <!-- The Object (Meteor) -->
+                            <circle cx="0" cy="0" r="15" fill="#94a3b8" />
+                            <circle cx="-5" cy="-5" r="3" fill="#64748b" />
+                            <circle cx="5" cy="4" r="4" fill="#64748b" />
+                            <circle cx="-3" cy="6" r="2" fill="#64748b" />
+                        </g>
+                        
+                        <!-- Dust impact effect (hidden initially) -->
+                        <g id="dust-effect" transform="translate(400, 320)" opacity="0">
+                            <ellipse cx="0" cy="0" rx="30" ry="10" fill="rgba(255,255,255,0.4)" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Comparison Panel: Gravitation -->
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-600 flex items-center gap-6">
+                    <div class="w-1/3 flex justify-center items-center gap-4 relative">
+                        <div class="w-8 h-8 rounded-full bg-red-500 shadow-lg flex items-center justify-center text-xs">1kg</div>
+                        <!-- Tiny invisible force -->
+                        <div class="flex-grow h-[1px] bg-slate-500 relative flex justify-center">
+                            <span class="absolute -top-5 text-[10px] text-slate-400">Gravitation</span>
+                            <div class="absolute left-0 w-2 h-2 border-t border-l border-slate-500 transform -rotate-45 -translate-y-[4px]"></div>
+                            <div class="absolute right-0 w-2 h-2 border-t border-r border-slate-500 transform rotate-45 -translate-y-[4px]"></div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-blue-500 shadow-lg flex items-center justify-center text-xs">1kg</div>
+                    </div>
+                    <div class="w-2/3 text-sm">
+                        <p class="text-cyan-300 font-bold mb-1">Meanwhile, Gravitational Force is tiny!</p>
+                        <p class="text-slate-300">The <em>Gravitation</em> between two 1kg objects (like two books) is only <strong>\(0.0000000000667 \text{ N}\)</strong>. It is so weak we never feel it. Gravity is just this same force, but one object is a massive planet!</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 3. Vocabulary -->
+        <section class="glass-panel p-6 rounded-2xl">
+            <h2 class="text-2xl font-semibold text-cyan-300 mb-4">3. Main Vocabulary & Meanings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Word 1 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Gravitation (\(F\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The mutual force of attraction existing between <em>any two</em> bodies in the universe, regardless of their size.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> ब्रह्माण्डमा रहेका <em>कुनै पनि दुई</em> पिण्डहरू बीच हुने आपसी आकर्षण बल (गुरुत्वाकर्षण बल)।</p>
+                </div>
+                <!-- Word 2 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Gravity (\(W\) or \(F\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The specific force by which a planet or other heavenly body pulls an object towards its center.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> ग्रह वा अन्य आकाशीय पिण्डले कुनै वस्तुलाई आफ्नो केन्द्रतिर तान्ने विशेष बल (गुरुत्वबल)।</p>
+                </div>
+                <!-- Word 3 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Acceleration due to Gravity (\(g\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The rate at which an object speeds up as it falls towards a planet due to gravity.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> गुरुत्वबलको कारणले ग्रहतिर खसिरहेको वस्तुको गति बढ्ने दर (गुरुत्व प्रवेग)।</p>
+                </div>
+                <!-- Word 4 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Weight (\(W = mg\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The physical measure of the force of gravity acting on an object's mass.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> वस्तुको पिण्डमा लाग्ने गुरुत्वबलको भौतिक मापन (तौल)।</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Conclusion -->
+        <section class="glass-panel p-6 rounded-2xl mb-12 border-l-4 border-cyan-500">
+            <h2 class="text-2xl font-semibold text-cyan-300 mb-4">4. Conclusion</h2>
+            <div class="space-y-4 bg-slate-900 p-6 rounded-xl">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> In conclusion, while these terms sound similar, they are applied differently. <strong>Gravitation</strong> is the general rule of the universe: every mass pulls every other mass. However, <strong>Gravity</strong> is the specific application of that rule when one of the objects is a massive planet. Because planets are so incredibly large, their Gravity causes significant acceleration (\(g\)), pulling objects down with enough force to give them <strong>Weight</strong>. If you drop an object on Jupiter, it falls much faster than on Earth because Jupiter's immense mass creates a much stronger Gravity.
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> निष्कर्षमा, यी शब्दहरू सुन्दा उस्तै लागे पनि, यिनीहरूको प्रयोग फरक तरिकाले गरिन्छ। <strong>गुरुत्वाकर्षण (Gravitation)</strong> ब्रह्माण्डको सामान्य नियम हो: प्रत्येक पिण्डले अर्को प्रत्येक पिण्डलाई तान्छ। यद्यपि, <strong>गुरुत्वबल (Gravity)</strong> भनेको त्यही नियमको एउटा विशेष अवस्था हो जब तीमध्ये एउटा वस्तु विशाल ग्रह हुन्छ। ग्रहहरू धेरै ठूला हुने भएकाले, तिनीहरूको गुरुत्वबलले उच्च प्रवेग (\(g\)) उत्पन्न गर्छ र वस्तुहरूलाई <strong>तौल (Weight)</strong> दिने पर्याप्त बलले तलतिर तान्छ। यदि तपाईंले बृहस्पति ग्रहमा कुनै वस्तु खसाल्नुभयो भने, त्यो पृथ्वीमा भन्दा धेरै छिटो खस्छ किनभने बृहस्पतिको विशाल पिण्डले धेरै बलियो गुरुत्वबल सिर्जना गर्छ।
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Simulation Logic -->
+    <script>
+        // Planet Data
+        const planets = {
+            earth: { g: 9.8, bgClass: 'grad-earth', arrowColor: '#f43f5e', name: 'Earth' },
+            moon: { g: 1.63, bgClass: 'grad-moon', arrowColor: '#cbd5e1', name: 'Moon' },
+            jupiter: { g: 24.79, bgClass: 'grad-jupiter', arrowColor: '#fb923c', name: 'Jupiter' }
+        };
+
+        const objectMass = 10; // kg
+
+        // DOM Elements
+        const radios = document.querySelectorAll('input[name="planet"]');
+        const planetSurface = document.getElementById('planet-surface');
+        const statG = document.getElementById('stat-g');
+        const statV = document.getElementById('stat-v');
+        const statW = document.getElementById('stat-w');
+        
+        const fallingObj = document.getElementById('falling-object');
+        const forceArrow = document.getElementById('force-arrow');
+        const forceHead = document.getElementById('force-head');
+        const forceLabel = document.getElementById('force-label');
+        const dustEffect = document.getElementById('dust-effect');
+
+        const btnDrop = document.getElementById('btn-drop');
+        const btnReset = document.getElementById('btn-reset');
+
+        // Animation State
+        let isDropping = false;
+        let animationTime = 0; // seconds
+        let currentY = 50; // Starting Y coordinate
+        const groundY = 320;
+        const visualScale = 10; // Pixels per meter mapping roughly for visual flow
+        let animationFrameId;
+        
+        let activePlanet = 'earth';
+
+        function updatePlanetSetup() {
+            if(isDropping) return; // Don't change while dropping
+
+            const pData = planets[activePlanet];
+            
+            // Update Planet Surface color
+            planetSurface.className.baseVal = pData.bgClass;
+            
+            // Update Stats
+            statG.innerText = pData.g.toFixed(2) + " m/s²";
+            statW.innerText = (objectMass * pData.g).toFixed(1) + " N";
+            statV.innerText = "0.0 m/s";
+
+            // Update Force Arrow length relative to gravity (Visual cue)
+            const arrowLen = Math.max(30, pData.g * 3); // Scale arrow based on g
+            forceArrow.setAttribute('y2', 15 + arrowLen);
+            forceHead.setAttribute('points', `-6,${5+arrowLen} 6,${5+arrowLen} 0,${15+arrowLen}`);
+            forceLabel.setAttribute('y', arrowLen);
+            
+            // Colors
+            forceArrow.setAttribute('stroke', pData.arrowColor);
+            forceHead.setAttribute('fill', pData.arrowColor);
+            forceLabel.setAttribute('fill', pData.arrowColor);
+
+            // Reset position
+            currentY = 50;
+            fallingObj.setAttribute('transform', `translate(400, ${currentY})`);
+            dustEffect.setAttribute('opacity', '0');
+            dustEffect.classList.remove('dust');
+        }
+
+        function dropLoop() {
+            if (!isDropping) return;
+
+            const g = planets[activePlanet].g;
+            // time increment. Using a slowed down scale (dt = 0.05) so humans can actually see it fall
+            const dt = 0.04; 
+            animationTime += dt;
+
+            // Physics: v = u + at, s = ut + 0.5*a*t^2
+            const v = g * animationTime;
+            const distanceMoved = 0.5 * g * Math.pow(animationTime, 2);
+            
+            currentY = 50 + (distanceMoved * visualScale);
+
+            // Update UI velocity
+            statV.innerText = v.toFixed(1) + " m/s";
+
+            // Collision check
+            if (currentY >= groundY) {
+                currentY = groundY;
+                fallingObj.setAttribute('transform', `translate(400, ${currentY})`);
+                
+                // Trigger dust
+                dustEffect.setAttribute('opacity', '1');
+                dustEffect.classList.remove('dust');
+                void dustEffect.offsetWidth; // trigger reflow
+                dustEffect.classList.add('dust');
+                
+                isDropping = false;
+                btnDrop.disabled = false;
+                btnDrop.style.opacity = '1';
+                return; // Stop animation
+            }
+
+            // Move SVG
+            fallingObj.setAttribute('transform', `translate(400, ${currentY})`);
+
+            animationFrameId = requestAnimationFrame(dropLoop);
+        }
+
+        // Event Listeners
+        radios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if(!isDropping) {
+                    activePlanet = e.target.value;
+                    updatePlanetSetup();
+                } else {
+                    e.target.checked = false; // Prevent switching while falling
+                    document.getElementById(`p-${activePlanet}`).checked = true;
+                }
+            });
+        });
+
+        btnDrop.addEventListener('click', () => {
+            if(isDropping || currentY >= groundY) return;
+            isDropping = true;
+            animationTime = 0;
+            btnDrop.disabled = true;
+            btnDrop.style.opacity = '0.5';
+            dropLoop();
+        });
+
+        btnReset.addEventListener('click', () => {
+            cancelAnimationFrame(animationFrameId);
+            isDropping = false;
+            btnDrop.disabled = false;
+            btnDrop.style.opacity = '1';
+            updatePlanetSetup();
+        });
+
+        // Init
+        updatePlanetSetup();
+    </script>
+</body>
+</html>
+

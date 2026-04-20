@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton's Universal Law of Gravitation</title>
+    <!-- Tailwind CSS for modern, responsive UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for world-class mathematical symbols -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a; /* Deep space background */
+            color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Custom range slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #334155;
+            border-radius: 3px;
+        }
+        
+        /* Animation for the magnetic-like field lines */
+        @keyframes pull-energy {
+            to { stroke-dashoffset: -20; }
+        }
+        .energy-line {
+            fill: none;
+            stroke: #60a5fa;
+            stroke-dasharray: 10 10;
+        }
+        
+        .nepali-text {
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                Newton's Universal Law of Gravitation
+            </h1>
+            <p class="text-xl text-slate-400 nepali-text not-italic">न्युटनको विश्वव्यापी गुरुत्वाकर्षणको नियम</p>
+        </header>
+
+        <!-- 1. Objective -->
+        <section class="glass-panel p-6 rounded-2xl">
+            <h2 class="text-2xl font-semibold text-blue-300 mb-4">1. Objective of Learning</h2>
+            <div class="space-y-4">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> The objective of learning Newton's Universal Law of Gravitation is to understand the invisible force that governs the motion of planets, stars, and galaxies. In real life, this knowledge is heavily used by space agencies to launch satellites, predict ocean tides, calculate trajectories of space missions, and understand our weight on different planets.
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> न्युटनको गुरुत्वाकर्षणको विश्वव्यापी नियम सिक्नुको मुख्य उद्देश्य ग्रह, तारा र आकाशगंगाहरूको गति नियन्त्रण गर्ने अदृश्य बल बुझ्नु हो। वास्तविक जीवनमा, यो ज्ञान अन्तरिक्ष एजेन्सीहरूले उपग्रहहरू प्रक्षेपण गर्न, समुद्रको ज्वारभाटाको भविष्यवाणी गर्न, अन्तरिक्ष यानको बाटो गणना गर्न र विभिन्न ग्रहहरूमा हाम्रो तौल बुझ्न प्रयोग गर्छन्।
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. Simulation -->
+        <section class="glass-panel p-6 rounded-2xl flex flex-col lg:flex-row gap-8">
+            
+            <!-- Controls Sidebar -->
+            <div class="w-full lg:w-1/3 space-y-6">
+                <h2 class="text-2xl font-semibold text-blue-300">2. Interactive Simulation</h2>
+                <p class="text-sm text-slate-300">Adjust the sliders to see how mass and distance affect the gravitational force.</p>
+                
+                <!-- Mass 1 Control -->
+                <div class="space-y-2 bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <div class="flex justify-between items-center">
+                        <label class="font-medium text-emerald-400">Mass 1 (\(M_1\))</label>
+                        <span id="m1-val" class="font-mono text-sm bg-slate-900 px-2 py-1 rounded">10 × 10²⁴ kg</span>
+                    </div>
+                    <input type="range" id="m1-slider" min="1" max="50" value="10">
+                </div>
+
+                <!-- Mass 2 Control -->
+                <div class="space-y-2 bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <div class="flex justify-between items-center">
+                        <label class="font-medium text-orange-400">Mass 2 (\(M_2\))</label>
+                        <span id="m2-val" class="font-mono text-sm bg-slate-900 px-2 py-1 rounded">10 × 10²⁴ kg</span>
+                    </div>
+                    <input type="range" id="m2-slider" min="1" max="50" value="10">
+                </div>
+
+                <!-- Distance Control -->
+                <div class="space-y-2 bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <div class="flex justify-between items-center">
+                        <label class="font-medium text-blue-400">Distance (\(r\))</label>
+                        <span id="r-val" class="font-mono text-sm bg-slate-900 px-2 py-1 rounded">5 × 10⁸ m</span>
+                    </div>
+                    <input type="range" id="r-slider" min="2" max="10" value="5" step="0.1">
+                </div>
+
+                <!-- Math Equation Panel -->
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 text-center">
+                    <p class="text-sm text-slate-400 mb-2">Universal Formula</p>
+                    <div class="text-xl overflow-x-auto">
+                        $$ F = G \frac{M_1 M_2}{r^2} $$
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-slate-700">
+                        <p class="text-sm text-slate-400">Calculated Force (\(F\))</p>
+                        <p id="force-result" class="text-2xl font-bold text-rose-400 mt-1 font-mono">0.00 N</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SVG Visualizer -->
+            <div class="w-full lg:w-2/3 bg-black rounded-xl border border-slate-700 relative overflow-hidden flex items-center justify-center min-h-[400px]">
+                <!-- Stars Background (Static SVG) -->
+                <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <g fill="#ffffff" opacity="0.5">
+                        <circle cx="10%" cy="20%" r="1" />
+                        <circle cx="30%" cy="80%" r="1.5" />
+                        <circle cx="70%" cy="10%" r="1" />
+                        <circle cx="85%" cy="60%" r="2" />
+                        <circle cx="50%" cy="40%" r="1" />
+                        <circle cx="20%" cy="50%" r="1.2" />
+                    </g>
+                </svg>
+
+                <!-- Dynamic Animation Canvas -->
+                <svg id="sim-canvas" width="100%" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+                    
+                    <!-- Gravitational Field Lines (Intensity Visualizer) -->
+                    <g id="field-lines"></g>
+
+                    <!-- Distance Line -->
+                    <line id="distance-line" x1="200" y1="200" x2="600" y2="200" stroke="#475569" stroke-width="2" stroke-dasharray="5,5"/>
+                    <text x="400" y="220" fill="#94a3b8" text-anchor="middle" font-size="14" font-family="sans-serif">Distance (r)</text>
+                    
+                    <!-- Planet 1 -->
+                    <circle id="planet1" cx="200" cy="200" r="30" fill="url(#grad1)" />
+                    <text id="label-m1" x="200" y="150" fill="#34d399" text-anchor="middle" font-weight="bold" font-family="sans-serif">M₁</text>
+                    
+                    <!-- Planet 2 -->
+                    <circle id="planet2" cx="600" cy="200" r="30" fill="url(#grad2)" />
+                    <text id="label-m2" x="600" y="150" fill="#fb923c" text-anchor="middle" font-weight="bold" font-family="sans-serif">M₂</text>
+
+                    <!-- Force Vectors (Arrows) -->
+                    <!-- Arrow for M1 pulling M2 (Starts at M1 surface, points right) -->
+                    <g id="force-group1">
+                        <line id="arrow-line1" x1="230" y1="200" x2="300" y2="200" stroke="#fb7185" stroke-width="4"/>
+                        <polygon id="arrow-head1" points="300,195 310,200 300,205" fill="#fb7185"/>
+                        <text x="270" y="190" fill="#fb7185" font-size="14" font-weight="bold" font-family="sans-serif">F</text>
+                    </g>
+
+                    <!-- Arrow for M2 pulling M1 (Starts at M2 surface, points left) -->
+                    <g id="force-group2">
+                        <line id="arrow-line2" x1="570" y1="200" x2="500" y2="200" stroke="#fb7185" stroke-width="4"/>
+                        <polygon id="arrow-head2" points="500,195 490,200 500,205" fill="#fb7185"/>
+                        <text x="530" y="190" fill="#fb7185" font-size="14" font-weight="bold" font-family="sans-serif">F</text>
+                    </g>
+
+                    <!-- Gradients for realistic planets -->
+                    <defs>
+                        <radialGradient id="grad1" cx="30%" cy="30%" r="70%">
+                            <stop offset="0%" stop-color="#6ee7b7" />
+                            <stop offset="100%" stop-color="#059669" />
+                        </radialGradient>
+                        <radialGradient id="grad2" cx="30%" cy="30%" r="70%">
+                            <stop offset="0%" stop-color="#fdba74" />
+                            <stop offset="100%" stop-color="#ea580c" />
+                        </radialGradient>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 3. Vocabulary -->
+        <section class="glass-panel p-6 rounded-2xl">
+            <h2 class="text-2xl font-semibold text-blue-300 mb-4">3. Main Vocabulary & Meanings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Word 1 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Gravitational Force (\(F\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The universal pulling (attractive) force existing between any two objects that have mass.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> पिण्ड भएका कुनै पनि दुई वस्तुहरू बीच रहेको विश्वव्यापी तान्ने (आकर्षण) बल।</p>
+                </div>
+                <!-- Word 2 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Mass (\(M_1, M_2\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The fundamental amount of matter contained within an object. (Measured in Kilograms, kg).</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> वस्तुमा रहेको पदार्थको आधारभूत मात्रा। (किलोग्राम, kg मा नापिन्छ)।</p>
+                </div>
+                <!-- Word 3 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Distance (\(r\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The straight-line gap measured precisely from the <em>center</em> of one object to the <em>center</em> of the other.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> एक वस्तुको <em>केन्द्र</em> बाट अर्को वस्तुको <em>केन्द्र</em> सम्म नापिएको सीधा-रेखा दूरी।</p>
+                </div>
+                <!-- Word 4 -->
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Universal Constant (\(G\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> A constant value (\(6.674 \times 10^{-11} \text{ N}\cdot\text{m}^2/\text{kg}^2\)) that ensures the mathematical formula works anywhere in the universe.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> एक स्थिर मान जसले गणितीय सूत्र ब्रह्माण्डको कुनै पनि ठाउँमा काम गर्छ भनी सुनिश्चित गर्दछ।</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Conclusion -->
+        <section class="glass-panel p-6 rounded-2xl mb-12">
+            <h2 class="text-2xl font-semibold text-blue-300 mb-4">4. Conclusion</h2>
+            <div class="space-y-4 bg-slate-900 p-6 rounded-xl border-l-4 border-blue-500">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> In conclusion, Newton's Universal Law of Gravitation teaches us two vital rules. First, the force is <strong>directly proportional</strong> to the product of the masses; if the planets get heavier, the gravity gets stronger. Second, the force is <strong>inversely proportional to the square</strong> of the distance; meaning if the planets move slightly further away, the gravitational pull drops dramatically and quickly. 
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> निष्कर्षमा, न्युटनको विश्वव्यापी गुरुत्वाकर्षणको नियमले हामीलाई दुई महत्त्वपूर्ण नियमहरू सिकाउँछ। पहिलो, बल पिण्डहरूको गुणनफलसँग <strong>समानुपातिक</strong> हुन्छ; यदि ग्रहहरू भारी भए भने, गुरुत्वाकर्षण बलियो हुन्छ। दोस्रो, बल दूरीको वर्गसँग <strong>व्युत्क्रमानुपातिक</strong> हुन्छ; यसको अर्थ यदि ग्रहहरू अलिकति टाढा गए भने, गुरुत्वाकर्षणको तान्ने बल नाटकीय रूपमा र धेरै छिटो घट्छ।
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Simulation Logic -->
+    <script>
+        // Constants
+        const G = 6.674e-11; 
+        // We use scaling factors to make the numbers look realistic while keeping the simulation visually pleasing
+        const massScale = 1e24; // 10^24 kg (Earth mass scale)
+        const distScale = 1e8;  // 10^8 m (Distance scale)
+
+        // DOM Elements
+        const m1Slider = document.getElementById('m1-slider');
+        const m2Slider = document.getElementById('m2-slider');
+        const rSlider = document.getElementById('r-slider');
+        
+        const m1ValText = document.getElementById('m1-val');
+        const m2ValText = document.getElementById('m2-val');
+        const rValText = document.getElementById('r-val');
+        const forceResultText = document.getElementById('force-result');
+
+        // SVG Elements
+        const planet1 = document.getElementById('planet1');
+        const planet2 = document.getElementById('planet2');
+        const distLine = document.getElementById('distance-line');
+        const labelM1 = document.getElementById('label-m1');
+        const labelM2 = document.getElementById('label-m2');
+        const fieldLinesGroup = document.getElementById('field-lines');
+        
+        // Arrows
+        const arrowLine1 = document.getElementById('arrow-line1');
+        const arrowHead1 = document.getElementById('arrow-head1');
+        const arrowLine2 = document.getElementById('arrow-line2');
+        const arrowHead2 = document.getElementById('arrow-head2');
+
+        function updateSimulation() {
+            // Get slider values
+            const m1_raw = parseFloat(m1Slider.value);
+            const m2_raw = parseFloat(m2Slider.value);
+            const r_raw = parseFloat(rSlider.value); // distance
+
+            // Calculate true scientific values
+            const true_m1 = m1_raw * massScale;
+            const true_m2 = m2_raw * massScale;
+            const true_r = r_raw * distScale;
+
+            // Calculate Force: F = G * (m1 * m2) / r^2
+            const force = (G * true_m1 * true_m2) / (true_r * true_r);
+
+            // Update UI Text Panel
+            m1ValText.innerText = `${m1_raw} × 10²⁴ kg`;
+            m2ValText.innerText = `${m2_raw} × 10²⁴ kg`;
+            rValText.innerText = `${r_raw} × 10⁸ m`;
+            
+            // Format force nicely (Scientific notation)
+            forceResultText.innerText = force.toExponential(2) + " N";
+
+            // ---- UPDATE VISUALS (SVG) ----
+            
+            // 1. Center logic for SVG
+            const svgWidth = 800;
+            // Map r_raw (2 to 10) to visual distance (150 to 550 pixels)
+            const visualDistance = 150 + ((r_raw - 2) / 8) * 400; 
+            
+            const cx1 = (svgWidth / 2) - (visualDistance / 2);
+            const cx2 = (svgWidth / 2) + (visualDistance / 2);
+
+            // 2. Planet sizes: Area proportional to mass -> Radius proportional to sqrt(mass)
+            // Base radius 15, max around 50
+            const r1 = 15 + Math.sqrt(m1_raw) * 4; 
+            const r2 = 15 + Math.sqrt(m2_raw) * 4;
+
+            // Apply to SVG
+            planet1.setAttribute('cx', cx1);
+            planet1.setAttribute('r', r1);
+            labelM1.setAttribute('x', cx1);
+            labelM1.setAttribute('y', 200 - r1 - 15);
+
+            planet2.setAttribute('cx', cx2);
+            planet2.setAttribute('r', r2);
+            labelM2.setAttribute('x', cx2);
+            labelM2.setAttribute('y', 200 - r2 - 15);
+
+            // Distance Line
+            distLine.setAttribute('x1', cx1);
+            distLine.setAttribute('x2', cx2);
+
+            // 3. Force Arrows length
+            // We need a visual scale for the arrows so they stay on screen.
+            // Force range approx: Min (m=1, r=10) to Max (m=50, r=2).
+            // Let's use a logarithmic or clamped scale for aesthetics.
+            // F range: ~ 6.6e19 to 4.1e23. Let's base arrow length on a mapped value.
+            const minForce = (G * (1*massScale) * (1*massScale)) / Math.pow(10*distScale, 2);
+            const maxForce = (G * (50*massScale) * (50*massScale)) / Math.pow(2*distScale, 2);
+            
+            // Normalize force visually between 20px and 120px length
+            // Using square root scaling for visual balance
+            const forceRatio = Math.sqrt((force - minForce) / (maxForce - minForce)); 
+            const visualArrowLength = 30 + (forceRatio * 90); 
+
+            // Arrow 1 (M1 pulling M2 towards right)
+            const a1_startX = cx1 + r1 + 5;
+            const a1_endX = a1_startX + visualArrowLength;
+            // Prevent arrows from overlapping planets visually
+            const safeA1EndX = Math.min(a1_endX, (svgWidth/2) - 10);
+            
+            arrowLine1.setAttribute('x1', a1_startX);
+            arrowLine1.setAttribute('x2', safeA1EndX);
+            arrowHead1.setAttribute('points', `${safeA1EndX},195 ${safeA1EndX+10},200 ${safeA1EndX},205`);
+            document.querySelector('#force-group1 text').setAttribute('x', a1_startX + (safeA1EndX-a1_startX)/2 - 5);
+
+            // Arrow 2 (M2 pulling M1 towards left)
+            const a2_startX = cx2 - r2 - 5;
+            const a2_endX = a2_startX - visualArrowLength;
+            const safeA2EndX = Math.max(a2_endX, (svgWidth/2) + 10);
+
+            arrowLine2.setAttribute('x1', a2_startX);
+            arrowLine2.setAttribute('x2', safeA2EndX);
+            arrowHead2.setAttribute('points', `${safeA2EndX},195 ${safeA2EndX-10},200 ${safeA2EndX},205`);
+            document.querySelector('#force-group2 text').setAttribute('x', safeA2EndX + (a2_startX-safeA2EndX)/2 - 5);
+
+            // 4. Update Field Lines (Magnetic-like pulling intensity)
+            fieldLinesGroup.innerHTML = ''; 
+            const numLines = 7; // Number of curved field lines
+            const maxOffset = 130; // Vertical spread of the lines
+            
+            // Map the calculated force to visual intensity factors
+            const lineOpacity = 0.2 + (forceRatio * 0.8); // 20% to 100% visible
+            const lineThickness = 1 + (forceRatio * 5); // 1px to 6px thick
+            const animSpeed = 2 - (forceRatio * 1.7); // 2s (slow flow) down to 0.3s (fast flow)
+
+            const midX = (cx1 + cx2) / 2;
+
+            for (let i = 0; i < numLines; i++) {
+                const fraction = i / (numLines - 1); 
+                const offset = -maxOffset + (fraction * maxOffset * 2); 
+                
+                // Skip the exact center line so it doesn't overlap the distance label
+                if (Math.abs(offset) > 10) {
+                    // Left pull (Energy flowing from center towards Planet 1)
+                    const pathL = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    pathL.setAttribute('d', `M ${midX} ${200 + offset * 0.5} Q ${(cx1+midX)/2} ${200 + offset} ${cx1} 200`);
+                    pathL.setAttribute('class', 'energy-line');
+                    pathL.setAttribute('stroke-width', lineThickness);
+                    pathL.setAttribute('opacity', lineOpacity);
+                    pathL.style.animation = `pull-energy ${animSpeed}s linear infinite`;
+                    fieldLinesGroup.appendChild(pathL);
+
+                    // Right pull (Energy flowing from center towards Planet 2)
+                    const pathR = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    pathR.setAttribute('d', `M ${midX} ${200 + offset * 0.5} Q ${(cx2+midX)/2} ${200 + offset} ${cx2} 200`);
+                    pathR.setAttribute('class', 'energy-line');
+                    pathR.setAttribute('stroke-width', lineThickness);
+                    pathR.setAttribute('opacity', lineOpacity);
+                    pathR.style.animation = `pull-energy ${animSpeed}s linear infinite reverse`; // Flows to the right
+                    fieldLinesGroup.appendChild(pathR);
+                }
+            }
+        }
+
+        // Add event listeners
+        m1Slider.addEventListener('input', updateSimulation);
+        m2Slider.addEventListener('input', updateSimulation);
+        rSlider.addEventListener('input', updateSimulation);
+
+        // Initial render
+        updateSimulation();
+    </script>
+</body>
+</html>
+
+

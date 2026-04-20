@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magnetic Field and Lines of Force</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for scientific formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a; /* Deep space slate */
+            color: #f8fafc;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+        .nepali-text {
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+        
+        /* Magnetic Field Lines Animation */
+        @keyframes line-flow {
+            from { stroke-dashoffset: 20; }
+            to { stroke-dashoffset: 0; }
+        }
+        .field-line {
+            fill: none;
+            stroke: #c084fc;
+            stroke-width: 2;
+            stroke-dasharray: 8 6;
+            opacity: 0.6;
+            animation: line-flow 1s linear infinite;
+        }
+        
+        /* Yellow Dotted Boundary Animation */
+        @keyframes pulse-boundary {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        .yellow-boundary {
+            fill: none;
+            stroke: #eab308; /* Yellow-500 */
+            stroke-width: 3;
+            stroke-dasharray: 12 12;
+            animation: pulse-boundary 3s ease-in-out infinite;
+        }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px;
+            border-radius: 50%; background: #eab308; cursor: pointer; margin-top: -7px;
+            box-shadow: 0 0 10px rgba(234, 179, 8, 0.8);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: #475569; border-radius: 3px;
+        }
+
+        /* Iron Nail Styling */
+        .draggable {
+            cursor: grab;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        
+        /* UI Alerts */
+        .status-badge {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-10">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                Magnetic Field & Lines of Force
+            </h1>
+            <p class="text-xl text-slate-400 nepali-text not-italic">चुम्बकीय क्षेत्र र बल रेखाहरू</p>
+        </header>
+
+        <!-- 1. Objective -->
+        <section class="glass-panel p-6 rounded-2xl border-l-4 border-purple-500">
+            <h2 class="text-2xl font-semibold text-purple-400 mb-4">1. Objective of Learning</h2>
+            <div class="space-y-4">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> The objective is to visualize how a magnet's power is distributed. A magnet cannot attract iron from anywhere; its power exists only within a specific boundary called the <strong>Magnetic Field (\(\vec{B}\))</strong>. We represent this boundary with a <span class="text-yellow-400 font-bold">Yellow Dotted Line</span>. If an iron object crosses this invisible threshold, it gets pulled in instantly. If it stays outside, it feels no force at all!
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> यसको उद्देश्य चुम्बकको शक्ति कसरी फैलिएको हुन्छ भनेर हेर्नु हो। चुम्बकले जहाँसुकैबाट फलाम तान्न सक्दैन; यसको शक्ति <strong>चुम्बकीय क्षेत्र (\(\vec{B}\))</strong> भनिने निश्चित सीमाभित्र मात्र हुन्छ। हामी यो सीमालाई <span class="text-yellow-400 font-bold">पहेंलो थोप्ला भएको रेखा</span>ले देखाउँछौं। यदि कुनै फलामको वस्तु यो अदृश्य सीमा पार गर्छ भने, यो तुरुन्तै तानिन्छ। यदि बाहिर छ भने, यसमा कुनै बल लाग्दैन!
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. Simulation -->
+        <section class="glass-panel p-6 rounded-2xl flex flex-col lg:flex-row gap-8">
+            
+            <!-- Controls & Instructions -->
+            <div class="w-full lg:w-1/3 space-y-6 flex flex-col justify-center">
+                <h2 class="text-2xl font-semibold text-pink-400">Interactive Attraction Test</h2>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    Use the slider to slowly push the iron nail towards the magnet. Watch what happens the exact moment it crosses the yellow dotted line! (You can also freely drag the nail with your mouse/finger).
+                </p>
+                
+                <!-- Precision Slider Control -->
+                <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 space-y-3">
+                    <div class="flex justify-between text-sm font-bold text-yellow-400">
+                        <span>Push Nail Towards Magnet</span>
+                        <span id="slider-dist-val" class="text-white font-mono bg-slate-900 px-2 py-1 rounded">Distance: Far</span>
+                    </div>
+                    <!-- Slider ranges from 50px (far left) to 320px (touching the pole) -->
+                    <input type="range" id="nail-slider" min="50" max="320" value="50">
+                </div>
+
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 text-center space-y-4">
+                    <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">Nail Status</p>
+                    <div id="status-display" class="status-badge py-3 px-4 rounded-lg bg-slate-800 text-slate-400 font-bold border border-slate-600">
+                        OUTSIDE FIELD (No Force)
+                    </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button id="btn-reset" class="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 w-full py-3 rounded-xl font-bold text-white uppercase tracking-wide transition shadow-lg">
+                        Reset Nail Position
+                    </button>
+                </div>
+            </div>
+
+            <!-- SVG Simulation Canvas -->
+            <div class="w-full lg:w-2/3 bg-black rounded-xl border border-slate-700 relative h-[450px] overflow-hidden select-none">
+                <svg id="sim-canvas" width="100%" height="100%" viewBox="0 0 800 450">
+                    
+                    <defs>
+                        <!-- Glow filter for magnet -->
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="15" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                        
+                        <!-- Arrow head for field lines -->
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#c084fc" />
+                        </marker>
+                    </defs>
+
+                    <!-- Background Grid -->
+                    <pattern id="bg-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <circle cx="2" cy="2" r="1" fill="#334155" />
+                    </pattern>
+                    <rect width="100%" height="100%" fill="url(#bg-grid)" />
+
+                    <!-- Magnetic Field Zone Background Glow -->
+                    <circle cx="400" cy="225" r="210" fill="url(#rad-grad)" opacity="0.2"/>
+                    <defs>
+                        <radialGradient id="rad-grad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#a855f7" />
+                            <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+
+                    <!-- YELLOW DOTTED BOUNDARY LINE -->
+                    <circle cx="400" cy="225" r="210" class="yellow-boundary" />
+                    <path d="M 320,15 Q 400,0 480,15" fill="none" stroke="transparent" id="curve-text-path"/>
+                    <text font-weight="bold" font-size="14" fill="#eab308" letter-spacing="2">
+                        <textPath href="#curve-text-path" startOffset="50%" text-anchor="middle">
+                            MAGNETIC FIELD BOUNDARY
+                        </textPath>
+                    </text>
+
+                    <!-- Magnetic Field Lines (Drawn via JS for perfection) -->
+                    <g id="field-lines-group"></g>
+
+                    <!-- Central Bar Magnet -->
+                    <g id="magnet" transform="translate(400, 225)" filter="url(#glow)">
+                        <!-- North Pole (Red) -->
+                        <rect x="-80" y="-20" width="80" height="40" fill="#ef4444" stroke="#991b1b" stroke-width="2"/>
+                        <text x="-40" y="6" fill="white" font-weight="bold" font-size="20" text-anchor="middle">N</text>
+                        <!-- South Pole (Blue) -->
+                        <rect x="0" y="-20" width="80" height="40" fill="#3b82f6" stroke="#1e3a8a" stroke-width="2"/>
+                        <text x="40" y="6" fill="white" font-weight="bold" font-size="20" text-anchor="middle">S</text>
+                    </g>
+
+                    <!-- Draggable Iron Nail -->
+                    <g id="iron-nail" class="draggable" transform="translate(50, 225) rotate(90)">
+                        <!-- Glow ring when dragging -->
+                        <circle id="drag-ring" cx="0" cy="0" r="25" fill="rgba(255, 255, 255, 0)" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4" opacity="0"/>
+                        <!-- The Nail Graphic -->
+                        <path d="M -2,-15 L 2,-15 L 2,10 L 0,15 L -2,10 Z" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+                        <rect x="-5" y="-18" width="10" height="4" fill="#cbd5e1" stroke="#475569" stroke-width="1"/>
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 3. Vocabulary -->
+        <section class="glass-panel p-6 rounded-2xl border-l-4 border-pink-500">
+            <h2 class="text-2xl font-semibold text-pink-300 mb-4">3. Main Vocabulary & Meanings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Magnetic Field (\(\vec{B}\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The 3D space around a magnet, marked by the yellow dotted line, where its attracting or repelling force can be felt.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> पहेंलो थोप्ला भएको रेखाले चिनिएको चुम्बकको वरिपरिको थ्रीडी (3D) ठाउँ, जहाँ यसको तान्ने वा धकेल्ने बल महसुस गर्न सकिन्छ।</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Magnetic Lines of Force</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> Invisible lines that map out the magnetic field. They always emerge from the North pole and enter the South pole.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> चुम्बकीय क्षेत्रको नक्सा देखाउने अदृश्य रेखाहरू। यी सधैं उत्तरी ध्रुवबाट निस्कन्छन् र दक्षिणी ध्रुवमा प्रवेश गर्छन्।</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Magnetic Material</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> Metals (like Iron, Nickel, and Cobalt) that are strongly attracted to magnets.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> धातुहरू (जस्तै फलाम, निकल र कोबाल्ट) जुन चुम्बकतिर बलियो रूपमा तानिन्छन्।</p>
+                </div>
+                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                    <h3 class="text-xl font-bold text-white">Attraction Threshold</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The specific distance at which the magnetic pull becomes stronger than the friction holding the nail back.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> निश्चित दूरी जहाँ चुम्बकीय तान्ने बल फलामलाई रोकेर राख्ने घर्षण भन्दा बलियो हुन्छ।</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Conclusion -->
+        <section class="glass-panel p-6 rounded-2xl mb-12 border-l-4 border-purple-500">
+            <h2 class="text-2xl font-semibold text-purple-400 mb-4">4. Conclusion</h2>
+            <div class="space-y-4 bg-slate-900 p-6 rounded-xl">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> In conclusion, a magnet's power is not infinite. The simulation proves that <strong>Magnetic Lines of Force</strong> create a specific zone inside the <strong>Yellow Boundary</strong>. If you place an iron nail far away, it feels zero attraction. However, the exact moment you slide the nail across the yellow dotted line, the magnetic force overcomes everything else, ripping the iron out of your control and snapping it to the pole!
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> निष्कर्षमा, चुम्बकको शक्ति अनन्त हुँदैन। सिमुलेशनले प्रमाणित गर्छ कि <strong>चुम्बकीय बल रेखाहरूले</strong> <strong>पहेंलो सीमाभित्र</strong> एउटा निश्चित क्षेत्र बनाउँछन्। यदि तपाईंले फलामलाई धेरै टाढा राख्नुभयो भने, यसमा शून्य आकर्षण महसुस हुन्छ। तर, जब तपाईंले फलामलाई पहेंलो थोप्ला भएको रेखा पार गराउनुहुन्छ, चुम्बकीय बलले अरू सबै कुरालाई जितेर फलामलाई तपाईंको नियन्त्रणबाट खोस्छ र ध्रुवमा टाँस्छ!
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- 1. Draw Magnetic Field Lines ---
+        const fieldLinesGroup = document.getElementById('field-lines-group');
+        const magnetX = 400;
+        const magnetY = 225;
+        const poleDist = 70; // Distance from center to poles N(-70), S(+70)
+        
+        // Generate symmetrical arcs from N to S
+        function drawFieldLines() {
+            const radiiY = [40, 80, 140, 220]; // Spread of the lines
+            
+            radiiY.forEach((ry, index) => {
+                const pathTop = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const dTop = `M ${magnetX - poleDist} ${magnetY} C ${magnetX - poleDist*1.5} ${magnetY - ry*1.5}, ${magnetX + poleDist*1.5} ${magnetY - ry*1.5}, ${magnetX + poleDist} ${magnetY}`;
+                pathTop.setAttribute("d", dTop);
+                pathTop.setAttribute("class", "field-line");
+                if(index < radiiY.length - 1) pathTop.setAttribute("marker-mid", "url(#arrow)"); 
+                fieldLinesGroup.appendChild(pathTop);
+
+                const pathBot = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const dBot = `M ${magnetX - poleDist} ${magnetY} C ${magnetX - poleDist*1.5} ${magnetY + ry*1.5}, ${magnetX + poleDist*1.5} ${magnetY + ry*1.5}, ${magnetX + poleDist} ${magnetY}`;
+                pathBot.setAttribute("d", dBot);
+                pathBot.setAttribute("class", "field-line");
+                fieldLinesGroup.appendChild(pathBot);
+            });
+            
+            const lineN = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            lineN.setAttribute("x1", magnetX - poleDist); lineN.setAttribute("y1", magnetY);
+            lineN.setAttribute("x2", 0); lineN.setAttribute("y2", magnetY);
+            lineN.setAttribute("class", "field-line");
+            fieldLinesGroup.appendChild(lineN);
+
+            const lineS = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            lineS.setAttribute("x1", 800); lineS.setAttribute("y1", magnetY);
+            lineS.setAttribute("x2", magnetX + poleDist); lineS.setAttribute("y2", magnetY);
+            lineS.setAttribute("class", "field-line");
+            fieldLinesGroup.appendChild(lineS);
+        }
+        drawFieldLines();
+
+
+        // --- 2. Interactive Physics (Slider & Drag) ---
+        const svgCanvas = document.getElementById('sim-canvas');
+        const ironNail = document.getElementById('iron-nail');
+        const dragRing = document.getElementById('drag-ring');
+        const statusDisplay = document.getElementById('status-display');
+        const btnReset = document.getElementById('btn-reset');
+        const nailSlider = document.getElementById('nail-slider');
+        const sliderDistVal = document.getElementById('slider-dist-val');
+
+        let isDragging = false;
+        let nailX = 50; // Starting position (matches slider)
+        let nailY = 225; // Vertical center
+        let animationFrame = null;
+
+        // The effective attraction radius (Yellow Boundary)
+        const FIELD_RADIUS = 210; 
+
+        // Convert Mouse/Touch to SVG coordinates
+        function getMousePosition(evt) {
+            const CTM = svgCanvas.getScreenCTM();
+            if (evt.touches) {
+                return { x: (evt.touches[0].clientX - CTM.e) / CTM.a, y: (evt.touches[0].clientY - CTM.f) / CTM.d };
+            }
+            return { x: (evt.clientX - CTM.e) / CTM.a, y: (evt.clientY - CTM.f) / CTM.d };
+        }
+
+        function updateStatus(text, classes) {
+            statusDisplay.textContent = text;
+            statusDisplay.className = `status-badge py-3 px-4 rounded-lg font-bold border ${classes}`;
+        }
+
+        // Check if nail crossed boundary and apply force
+        function checkMagneticBoundary(syncSlider = false) {
+            const distToMagnet = Math.hypot(nailX - magnetX, nailY - magnetY);
+            
+            if (distToMagnet < FIELD_RADIUS) {
+                // INSIDE FIELD: Snap to nearest pole!
+                updateStatus("⚠️ CROSSED BOUNDARY! MAGNETIC PULL ACTIVE!", "bg-pink-900 text-pink-300 border-pink-500 animate-pulse");
+                dragRing.setAttribute("stroke", "#c084fc");
+                
+                // Which pole is closer?
+                const distN = Math.hypot(nailX - (magnetX - 80), nailY - magnetY);
+                const distS = Math.hypot(nailX - (magnetX + 80), nailY - magnetY);
+                
+                let targetX = magnetX - 80; // North
+                let targetRot = 90; 
+                
+                if (distS < distN) {
+                    targetX = magnetX + 80; // South
+                    targetRot = -90; 
+                }
+
+                // Magnetic force overpowers user input: cancel drag and animate snap
+                isDragging = false; 
+                animateSnap(targetX, magnetY, targetRot, syncSlider);
+
+            } else {
+                updateStatus("OUTSIDE FIELD (No Force)", "bg-slate-800 text-slate-400 border-slate-600");
+                dragRing.setAttribute("stroke", "#cbd5e1");
+            }
+        }
+
+        // --- SLIDER LOGIC ---
+        nailSlider.addEventListener('input', (e) => {
+            if(animationFrame) cancelAnimationFrame(animationFrame);
+            
+            // X position maps directly to slider value (50 to 320)
+            nailX = parseInt(e.target.value);
+            nailY = 225; // Keep horizontally centered for slider
+            
+            // UI text update
+            if (nailX < 150) sliderDistVal.innerText = "Distance: Far";
+            else if (nailX < 190) sliderDistVal.innerText = "Distance: Getting Close";
+            else sliderDistVal.innerText = "Distance: Field Boundary!";
+
+            // Point nail towards magnet horizontally
+            ironNail.style.transform = `translate(${nailX}px, ${nailY}px) rotate(90deg)`;
+            
+            checkMagneticBoundary(true); // true = update slider during snap animation
+        });
+
+        // --- FREE DRAG LOGIC ---
+        function startDrag(evt) {
+            if(animationFrame) cancelAnimationFrame(animationFrame);
+            isDragging = true;
+            dragRing.setAttribute("opacity", "1");
+            updateStatus("DRAGGING...", "bg-blue-900 text-blue-300 border-blue-500");
+        }
+
+        function drag(evt) {
+            if (!isDragging) return;
+            evt.preventDefault();
+            
+            const coord = getMousePosition(evt);
+            nailX = Math.max(20, Math.min(780, coord.x));
+            nailY = Math.max(20, Math.min(430, coord.y));
+
+            // Sync slider if on horizontal axis roughly
+            if(Math.abs(nailY - 225) < 50 && nailX <= 320 && nailX >= 50) {
+                nailSlider.value = nailX;
+            }
+
+            // Tilt nail slightly while dragging
+            ironNail.style.transform = `translate(${nailX}px, ${nailY}px) rotate(-15deg)`;
+        }
+
+        function endDrag(evt) {
+            if (!isDragging) return;
+            isDragging = false;
+            dragRing.setAttribute("opacity", "0");
+            checkMagneticBoundary(true);
+        }
+
+        // Smooth animation pulling the nail to the magnet
+        function animateSnap(targetX, targetY, targetRot, syncSlider) {
+            let currentX = nailX;
+            let currentY = nailY;
+            
+            function step() {
+                if(isDragging) return; // Abort if user grabs it again
+                
+                const dx = targetX - currentX;
+                const dy = targetY - currentY;
+                
+                currentX += dx * 0.15; // Speed of pull
+                currentY += dy * 0.15;
+                
+                ironNail.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${targetRot}deg)`;
+                
+                if(syncSlider && currentY === 225 && currentX <= 320 && currentX >= 50) {
+                    nailSlider.value = currentX;
+                }
+                
+                // Stop when attached
+                if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+                    ironNail.style.transform = `translate(${targetX}px, ${targetY}px) rotate(${targetRot}deg)`;
+                    nailX = targetX;
+                    nailY = targetY;
+                    if(syncSlider) nailSlider.value = targetX; // Snap slider to final pos
+                    updateStatus("ATTACHED TO POLE!", "bg-emerald-900 text-emerald-400 border-emerald-500");
+                    return; 
+                }
+                
+                animationFrame = requestAnimationFrame(step);
+            }
+            step();
+        }
+
+        // Event Listeners for Dragging
+        ironNail.addEventListener('mousedown', startDrag);
+        ironNail.addEventListener('touchstart', startDrag, {passive: false});
+        svgCanvas.addEventListener('mousemove', drag);
+        svgCanvas.addEventListener('touchmove', drag, {passive: false});
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+
+        // Reset Button
+        btnReset.addEventListener('click', () => {
+            if(animationFrame) cancelAnimationFrame(animationFrame);
+            isDragging = false;
+            nailX = 50;
+            nailY = 225;
+            nailSlider.value = 50;
+            sliderDistVal.innerText = "Distance: Far";
+            
+            ironNail.style.transition = 'transform 0.5s ease-out';
+            ironNail.style.transform = `translate(${nailX}px, ${nailY}px) rotate(90deg)`;
+            updateStatus("OUTSIDE FIELD (No Force)", "bg-slate-800 text-slate-400 border-slate-600");
+            
+            setTimeout(() => { ironNail.style.transition = 'none'; }, 500);
+        });
+
+        // Init
+        ironNail.style.transform = `translate(${nailX}px, ${nailY}px) rotate(90deg)`;
+    </script>
+</body>
+</html>
+

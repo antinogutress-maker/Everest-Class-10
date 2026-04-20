@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Fall & Weightlessness Simulation</title>
+    <!-- Tailwind CSS for modern UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for world-class mathematical symbols -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #09090b; /* Deep dark background */
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nepali-text {
+            color: #a1a1aa;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+        /* Custom Button Styles */
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-danger:active { transform: scale(0.95); }
+        .btn-action {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-action:active { transform: scale(0.95); }
+        
+        /* Elevator Shaft Animation */
+        .shaft-line {
+            stroke: #3f3f46;
+            stroke-width: 2;
+            stroke-dasharray: 20 40;
+        }
+        .floating {
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
+                Free Fall & Weightlessness
+            </h1>
+            <p class="text-xl text-zinc-400 nepali-text not-italic">स्वतन्त्र खसाइ र तौलविहीनता</p>
+        </header>
+
+        <!-- 1. Objective -->
+        <section class="glass-panel p-6 rounded-2xl border-l-4 border-indigo-500">
+            <h2 class="text-2xl font-semibold text-indigo-300 mb-4">1. Objective of Learning</h2>
+            <div class="space-y-4">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> The objective is to understand why astronauts float in space and why you feel a sudden "drop" in your stomach on a roller coaster. We learn the crucial difference between true gravity (which is always there) and the <em>Normal Force</em> (the ground pushing back), which creates the physical sensation of weight.
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> यसको मुख्य उद्देश्य अन्तरिक्ष यात्रीहरू किन अन्तरिक्षमा तैरिन्छन् र रोलर कोस्टरमा तल झर्दा हाम्रो पेट किन सिरिङ्ग हुन्छ भन्ने कुरा बुझ्नु हो। यसले हामीलाई वास्तविक गुरुत्वाकर्षण बल र <em>प्रतिक्रिया बल (Normal Force - जसले हामीलाई तौलको महसुस गराउँछ)</em> बीचको महत्त्वपूर्ण भिन्नता सिकाउँछ।
+                </p>
+            </div>
+        </section>
+
+        <!-- 2. Simulation -->
+        <section class="glass-panel p-6 rounded-2xl flex flex-col lg:flex-row gap-8">
+            
+            <!-- Controls Sidebar -->
+            <div class="w-full lg:w-1/3 space-y-6">
+                <h2 class="text-2xl font-semibold text-indigo-300">2. Elevator Simulation</h2>
+                <p class="text-sm text-zinc-400">Change the elevator's motion to see how the Apparent Weight (Reaction Force) changes. Cut the cable for free fall!</p>
+                
+                <!-- Mass Control -->
+                <div class="space-y-2 bg-zinc-800/50 p-4 rounded-xl border border-zinc-700">
+                    <div class="flex justify-between items-center">
+                        <label class="font-medium text-purple-400">Person Mass (\(m\))</label>
+                        <span class="font-mono text-sm bg-zinc-900 px-2 py-1 rounded">50 kg</span>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-up" class="btn-action py-3 rounded-lg font-bold text-white tracking-wide">Accelerate UP</button>
+                    <button id="btn-down" class="btn-action py-3 rounded-lg font-bold text-white tracking-wide">Accelerate DOWN</button>
+                    <button id="btn-stop" class="col-span-2 bg-zinc-700 hover:bg-zinc-600 py-3 rounded-lg font-bold text-white transition">Stop (Stationary)</button>
+                    <button id="btn-cut" class="btn-danger col-span-2 py-4 rounded-lg font-bold text-white tracking-wider text-lg animate-pulse">✂️ CUT CABLE (FREE FALL)</button>
+                </div>
+
+                <!-- Math Equation Panel -->
+                <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-700 text-center relative overflow-hidden">
+                    <div id="alert-weightless" class="absolute inset-0 bg-red-900/80 flex items-center justify-center font-bold text-2xl text-white opacity-0 transition-opacity duration-300 pointer-events-none z-10">
+                        WEIGHTLESSNESS! (\(R = 0\))
+                    </div>
+                    <p class="text-sm text-zinc-400 mb-2">Apparent Weight Equation</p>
+                    <div class="text-lg overflow-x-auto text-indigo-200">
+                        $$ R = m(g \pm a) $$
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-zinc-700 grid grid-cols-2 gap-2 text-left">
+                        <div>
+                            <p class="text-xs text-zinc-400">True Weight (\(mg\))</p>
+                            <p class="text-lg font-mono text-white">490 N</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-zinc-400">Scale Reading (\(R\))</p>
+                            <p id="scale-reading" class="text-xl font-bold font-mono text-emerald-400">490 N</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SVG Visualizer -->
+            <div class="w-full lg:w-2/3 bg-black rounded-xl border border-zinc-700 relative overflow-hidden flex items-center justify-center min-h-[450px]">
+                
+                <svg id="sim-canvas" width="100%" height="450" viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+                    
+                    <!-- Scrolling Background (Shaft lines) -->
+                    <g id="shaft-bg">
+                        <line x1="200" y1="-500" x2="200" y2="1000" class="shaft-line" />
+                        <line x1="600" y1="-500" x2="600" y2="1000" class="shaft-line" />
+                    </g>
+
+                    <!-- Elevator Group -->
+                    <g id="elevator-group" transform="translate(400, 225)">
+                        <!-- Cable -->
+                        <line id="cable" x1="0" y1="-150" x2="0" y2="-400" stroke="#94a3b8" stroke-width="6" />
+                        <!-- Broken Cable parts (hidden initially) -->
+                        <path id="broken-cable" d="M 0,-150 L -10,-170 L 5,-190 L -5,-210 L 10,-230" stroke="#94a3b8" stroke-width="4" fill="none" opacity="0"/>
+                        
+                        <!-- Cabin -->
+                        <rect x="-150" y="-150" width="300" height="300" fill="rgba(30, 41, 59, 0.4)" stroke="#6366f1" stroke-width="4" rx="10"/>
+                        <line x1="-150" y1="140" x2="150" y2="140" stroke="#4f46e5" stroke-width="10"/> <!-- Floor -->
+                        
+                        <!-- Weighing Scale -->
+                        <rect x="-60" y="130" width="120" height="10" fill="#cbd5e1" rx="2"/>
+                        <text id="digital-scale" x="0" y="138" fill="#000" text-anchor="middle" font-size="8" font-family="monospace" font-weight="bold">490 N</text>
+
+                        <!-- Person & Apple Group (This will float inside during free fall) -->
+                        <g id="passenger-group" class="floating" transform="translate(0, 0)">
+                            <!-- Person Head -->
+                            <circle cx="-10" cy="10" r="25" fill="#fbcfe8" stroke="#db2777" stroke-width="2"/>
+                            <!-- Face -->
+                            <circle id="eyeL" cx="-20" cy="5" r="3" fill="#831843"/>
+                            <circle id="eyeR" cx="0" cy="5" r="3" fill="#831843"/>
+                            <path id="mouth" d="M -20,20 Q -10,25 0,20" stroke="#831843" stroke-width="2" fill="none"/>
+                            <!-- Body -->
+                            <line x1="-10" y1="35" x2="-10" y2="90" stroke="#db2777" stroke-width="6" stroke-linecap="round"/>
+                            <!-- Arms -->
+                            <path id="arms" d="M -10,45 Q -40,60 -30,90 M -10,45 Q 20,60 10,90" stroke="#db2777" stroke-width="6" fill="none" stroke-linecap="round"/>
+                            <!-- Legs -->
+                            <line id="legL" x1="-10" y1="90" x2="-30" y2="130" stroke="#db2777" stroke-width="6" stroke-linecap="round"/>
+                            <line id="legR" x1="-10" y1="90" x2="10" y2="130" stroke="#db2777" stroke-width="6" stroke-linecap="round"/>
+
+                            <!-- Floating Apple -->
+                            <g id="apple" transform="translate(50, 110)">
+                                <circle cx="0" cy="0" r="10" fill="#ef4444"/>
+                                <path d="M 0,-10 Q 5,-15 10,-10" stroke="#22c55e" stroke-width="2" fill="none"/>
+                            </g>
+                        </g>
+
+                        <!-- Force Vectors -->
+                        <!-- Gravity Force (Always pulls down exactly the same) -->
+                        <g id="vector-gravity" transform="translate(100, 70)">
+                            <line x1="0" y1="0" x2="0" y2="80" stroke="#ef4444" stroke-width="4"/>
+                            <polygon points="-6,70 6,70 0,80" fill="#ef4444"/>
+                            <text x="15" y="45" fill="#ef4444" font-weight="bold">Weight (mg)</text>
+                        </g>
+
+                        <!-- Normal Force (Pushes up from scale, changes length) -->
+                        <g id="vector-normal" transform="translate(-100, 130)">
+                            <line id="normal-line" x1="0" y1="0" x2="0" y2="-80" stroke="#34d399" stroke-width="4"/>
+                            <polygon id="normal-head" points="-6,-70 6,-70 0,-80" fill="#34d399"/>
+                            <text id="normal-label" x="-15" y="-45" fill="#34d399" font-weight="bold" text-anchor="end">Reaction (R)</text>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 3. Vocabulary -->
+        <section class="glass-panel p-6 rounded-2xl">
+            <h2 class="text-2xl font-semibold text-indigo-300 mb-4">3. Main Vocabulary & Meanings</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Word 1 -->
+                <div class="bg-zinc-800/50 p-4 rounded-lg border border-zinc-700">
+                    <h3 class="text-xl font-bold text-white">Free Fall (\(a = g\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> Motion of an object where gravity is the <em>only</em> force acting upon it. (Air resistance is zero).</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> हावाको प्रतिरोध नभएको अवस्थामा, केवल गुरुत्वाकर्षण बलको प्रभावमा मात्र वस्तु खस्ने प्रक्रिया (स्वतन्त्र खसाइ)।</p>
+                </div>
+                <!-- Word 2 -->
+                <div class="bg-zinc-800/50 p-4 rounded-lg border border-zinc-700">
+                    <h3 class="text-xl font-bold text-white">Weightlessness (\(R = 0\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The sensation of having no weight, occurring when there is zero reaction force from the ground.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> वस्तुको तौल शून्य भएको अनुभव हुने अवस्था, जहाँ सतहबाट कुनै प्रतिक्रिया बल हुँदैन (तौलविहीनता)।</p>
+                </div>
+                <!-- Word 3 -->
+                <div class="bg-zinc-800/50 p-4 rounded-lg border border-zinc-700">
+                    <h3 class="text-xl font-bold text-white">Normal/Reaction Force (\(R\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The upward push exerted by a surface (like a weighing scale) against an object. This is what we actually <em>feel</em> as our weight.</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> सतहले (जस्तै तौल नाप्ने मेसिनले) वस्तुलाई माथितिर धकेल्ने बल। हामीले तौलको रूपमा महसुस गर्ने बल यही नै हो।</p>
+                </div>
+                <!-- Word 4 -->
+                <div class="bg-zinc-800/50 p-4 rounded-lg border border-zinc-700">
+                    <h3 class="text-xl font-bold text-white">Apparent Weight (\(W'\))</h3>
+                    <p class="text-sm mt-2"><strong>English:</strong> The fluctuating weight reading on a scale when the elevator accelerates up (heavier) or down (lighter).</p>
+                    <p class="text-sm nepali-text"><strong>नेपाली:</strong> लिफ्ट माथि जाँदा वा तल झर्दा तौल नाप्ने मेसिनले देखाउने परिवर्तनशील तौल (आभासी तौल)।</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Conclusion -->
+        <section class="glass-panel p-6 rounded-2xl mb-12 border-l-4 border-indigo-500">
+            <h2 class="text-2xl font-semibold text-indigo-300 mb-4">4. Conclusion</h2>
+            <div class="space-y-4 bg-zinc-900 p-6 rounded-xl">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> In conclusion, our true weight (Gravity pulling down) never actually changes in an elevator. What changes is the <strong>Reaction Force (\(R\))</strong> pushing back up. When a cable breaks, both you and the elevator fall at the exact same acceleration (\(g = 9.8 \text{ m/s}^2\)). Because the floor is falling away from you just as fast as you are falling, it cannot push up against your feet. Therefore, Reaction Force becomes zero (\(R = 0\)), and you experience the physical phenomenon of <strong>Weightlessness</strong>.
+                </p>
+                <p class="nepali-text text-lg leading-relaxed">
+                    <strong>नेपाली:</strong> निष्कर्षमा, लिफ्ट भित्र हाम्रो वास्तविक तौल (गुरुत्वाकर्षण बल) कहिल्यै परिवर्तन हुँदैन। परिवर्तन हुने भनेको सतहले माथितिर धकेल्ने <strong>प्रतिक्रिया बल (\(R\))</strong> हो। जब लिफ्टको तार चुँडिन्छ, तपाईं र लिफ्ट दुवै एउटै प्रवेग (\(g\)) ले तल खस्न थाल्नुहुन्छ। भुइँ तपाईं जत्तिकै गतिमा तल खसिरहेको हुनाले, यसले तपाईंको खुट्टामा प्रतिक्रिया बल दिन सक्दैन। तसर्थ, प्रतिक्रिया बल शून्य (\(R = 0\)) हुन्छ, र तपाईंले <strong>तौलविहीनता (Weightlessness)</strong> को भौतिक अवस्थाको अनुभव गर्नुहुन्छ।
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Simulation Logic -->
+    <script>
+        // Constants
+        const mass = 50; // kg
+        const g = 9.8;   // m/s^2 (Gravity)
+        const baseWeight = mass * g; // 490 N
+        
+        let state = 'stop'; // 'stop', 'up', 'down', 'freefall'
+        let acceleration = 0; // m/s^2
+        let backgroundOffset = 0;
+        let elevatorSpeed = 0;
+        let animationFrame;
+
+        // DOM Elements
+        const scaleReading = document.getElementById('scale-reading');
+        const digitalScale = document.getElementById('digital-scale');
+        const normalLine = document.getElementById('normal-line');
+        const normalHead = document.getElementById('normal-head');
+        const normalLabel = document.getElementById('normal-label');
+        const passengerGroup = document.getElementById('passenger-group');
+        const shaftBg = document.getElementById('shaft-bg');
+        const cable = document.getElementById('cable');
+        const brokenCable = document.getElementById('broken-cable');
+        const alertWeightless = document.getElementById('alert-weightless');
+        const mouth = document.getElementById('mouth');
+        const arms = document.getElementById('arms');
+        const legL = document.getElementById('legL');
+        const legR = document.getElementById('legR');
+
+        // Buttons
+        const btnUp = document.getElementById('btn-up');
+        const btnDown = document.getElementById('btn-down');
+        const btnStop = document.getElementById('btn-stop');
+        const btnCut = document.getElementById('btn-cut');
+
+        function updatePhysics() {
+            let apparentWeight = 0;
+            
+            // Calculate Apparent Weight R = m(g ± a)
+            if (state === 'stop') {
+                apparentWeight = mass * g;
+                elevatorSpeed = 0;
+            } else if (state === 'up') {
+                apparentWeight = mass * (g + acceleration);
+                elevatorSpeed -= 0.5; // Moving up (bg moves down)
+                if (elevatorSpeed < -15) elevatorSpeed = -15;
+            } else if (state === 'down') {
+                apparentWeight = mass * (g - acceleration);
+                elevatorSpeed += 0.5; // Moving down (bg moves up)
+                if (elevatorSpeed > 15) elevatorSpeed = 15;
+            } else if (state === 'freefall') {
+                apparentWeight = 0; // R = m(g-g) = 0
+                elevatorSpeed += 1; // Falling extremely fast
+                if (elevatorSpeed > 40) elevatorSpeed = 40;
+            }
+
+            // Update UI Text
+            scaleReading.innerText = apparentWeight.toFixed(0) + " N";
+            digitalScale.textContent = apparentWeight.toFixed(0) + " N";
+
+            // Update Normal Force Vector Visuals
+            if (apparentWeight <= 0) {
+                // Weightless
+                normalLine.setAttribute('opacity', '0');
+                normalHead.setAttribute('opacity', '0');
+                normalLabel.setAttribute('opacity', '0');
+                alertWeightless.style.opacity = '1';
+                
+                // Float passenger & animate panic
+                passengerGroup.style.transform = "translate(0px, -40px)";
+                mouth.setAttribute('d', 'M -20,20 Q -10,30 0,20'); // open mouth
+                arms.setAttribute('d', 'M -10,45 Q -40,10 -50,10 M -10,45 Q 20,10 30,10'); // arms up
+                legL.setAttribute('d', 'M -10,90 Q -30,110 -40,100'); // leg bend
+                legR.setAttribute('d', 'M -10,90 Q 10,110 20,100'); // leg bend
+
+                cable.setAttribute('opacity', '0');
+                brokenCable.setAttribute('opacity', '1');
+
+            } else {
+                // Has weight
+                normalLine.setAttribute('opacity', '1');
+                normalHead.setAttribute('opacity', '1');
+                normalLabel.setAttribute('opacity', '1');
+                alertWeightless.style.opacity = '0';
+                
+                // Return passenger to ground
+                passengerGroup.style.transform = "translate(0px, 0px)";
+                mouth.setAttribute('d', 'M -20,20 Q -10,25 0,20'); // smile
+                arms.setAttribute('d', 'M -10,45 Q -40,60 -30,90 M -10,45 Q 20,60 10,90'); // arms down
+                legL.setAttribute('d', ''); // reset to line
+                legR.setAttribute('d', ''); // reset to line
+                
+                cable.setAttribute('opacity', '1');
+                brokenCable.setAttribute('opacity', '0');
+
+                // Scale arrow length based on weight relative to base weight
+                const ratio = apparentWeight / baseWeight;
+                const arrowLen = 80 * ratio;
+                normalLine.setAttribute('y2', -arrowLen);
+                normalHead.setAttribute('points', `-6,${-arrowLen+10} 6,${-arrowLen+10} 0,${-arrowLen}`);
+                normalLabel.setAttribute('y', -arrowLen - 5);
+            }
+
+            // Animate Background
+            backgroundOffset -= elevatorSpeed;
+            if (backgroundOffset > 100) backgroundOffset -= 100; // Reset loop
+            if (backgroundOffset < -100) backgroundOffset += 100;
+            shaftBg.setAttribute('transform', `translate(0, ${backgroundOffset})`);
+
+            animationFrame = requestAnimationFrame(updatePhysics);
+        }
+
+        // Event Listeners
+        btnUp.addEventListener('click', () => {
+            state = 'up';
+            acceleration = 4; // Arbitrary comfortable acceleration
+        });
+
+        btnDown.addEventListener('click', () => {
+            state = 'down';
+            acceleration = 4;
+        });
+
+        btnStop.addEventListener('click', () => {
+            state = 'stop';
+            acceleration = 0;
+        });
+
+        btnCut.addEventListener('click', () => {
+            state = 'freefall';
+            acceleration = g; // a = g
+        });
+
+        // Start animation loop
+        updatePhysics();
+    </script>
+</body>
+</html>
+
