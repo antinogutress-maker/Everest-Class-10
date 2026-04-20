@@ -121,7 +121,7 @@
 
             <div class="text-center px-2">
                 <p class="slogan-text text-xl font-bold italic leading-tight">
-                    "We believe in Modern way of Learning for Deep Knowledge"
+                    "We believe in Modern way of Learning for Deep Understanding"
                 </p>
             </div>
 
@@ -148,19 +148,19 @@
                 <div class="pt-4">
                     <h3 class="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3 px-1">Study Materials</h3>
                     <div class="grid gap-3">
-                        <a href="1/Newton's.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                        <a href="1/Newtons Universal Law of Gravity.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
                             <span class="font-semibold text-md">Newton's Universal Law of Gravity</span>
                             <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
-                        <a href="1/Free.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                        <a href="1/Free fall and Weightlessness.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
                             <span class="font-semibold text-md">Free fall and Weightlessness</span>
                             <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
-                        <a href="1/Gravity.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                        <a href="1/Gravity and Gravitional Force.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
                             <span class="font-semibold text-md">Gravity and Gravitational Force</span>
                             <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
-                        <a href="1/Pascal's.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                        <a href="1/Pascals Law Animation.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
                             <span class="font-semibold text-md">Pascal's Law</span>
                             <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </a>
@@ -193,12 +193,12 @@
     </div>
 
     <script>
-        // Folder 0 data
+        // Data mapped to the EXACT filenames shown in your screenshot
         const studyData = {
             "0": [
-                "Hydrolysis",
-                "Ammonia Gas Lab Preparation",
-                "CO2 Gas Lab preparation"
+                { title: "Hydrolysis", filename: "Hydrolosis .html" },
+                { title: "Ammonia Gas Lab Preparation", filename: "Amonia Gas Lab Preparation.html" },
+                { title: "CO2 Gas Lab Preparation", filename: "CO2 Gas Lab Preparation.html" }
             ]
         };
 
@@ -216,9 +216,8 @@
             topics.forEach((topic, index) => {
                 const link = document.createElement('a');
                 
-                // Extracts the first word from the topic string to use for the URL
-                const firstWord = topic.split(' ')[0];
-                link.href = `${id}/${firstWord}.html`;
+                // Directly points to the exact file name
+                link.href = `${id}/${topic.filename}`;
                 
                 link.className = `glass p-5 flex items-center justify-between no-underline text-white btn-tap opacity-0 translate-y-4`;
                 link.style.animation = `slideUp 0.4s ease forwards ${index * 0.1}s`;
@@ -228,7 +227,7 @@
                         <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-bold text-sm text-white backdrop-blur-sm">
                             0${index + 1}
                         </div>
-                        <span class="font-semibold text-lg leading-tight">${topic}</span>
+                        <span class="font-semibold text-lg leading-tight">${topic.title}</span>
                     </div>
                     <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                 `;
