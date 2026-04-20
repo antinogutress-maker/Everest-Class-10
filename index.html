@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,41 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Everest Academy School</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.07);
-            --glass-border: rgba(255, 255, 255, 0.12);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            --test-red: rgba(239, 68, 68, 0.25);
-            --test-red-border: rgba(239, 68, 68, 0.5);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            /* iOS Style Mesh Gradient Background */
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.6) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.6) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.6) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.6) 0px, transparent 50%);
+            background-attachment: fixed;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: white;
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
         }
 
+        /* Core Glassmorphism Class */
         .glass {
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border);
-            border-radius: 28px;
+            border-radius: 24px;
             box-shadow: var(--glass-shadow);
-        }
-
-        .glass-red {
-            background: var(--test-red);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 2px solid var(--test-red-border);
-            border-radius: 28px;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
         }
 
         /* Animated School Name */
@@ -54,9 +50,9 @@
             animation: float 3s ease-in-out infinite alternate;
         }
 
-        .everest { color: #ff5e62; text-shadow: 0 0 15px rgba(255,94,98,0.4); }
-        .academy { color: #00f2fe; text-shadow: 0 0 15px rgba(0,242,254,0.4); }
-        .school { color: #f9d423; text-shadow: 0 0 15px rgba(249,212,35,0.4); }
+        .everest { color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
+        .academy { color: #e0f2fe; }
+        .school { color: #bae6fd; }
 
         /* Slogan Animation */
         .slogan-text {
@@ -65,6 +61,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gradientFlow 4s linear infinite;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
         @keyframes gradientFlow {
@@ -73,26 +70,26 @@
 
         .photo-frame {
             position: relative;
-            padding: 10px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-            border-radius: 30px;
+            padding: 8px;
+            border-radius: 28px;
         }
 
         .photo-frame img {
             width: 100%;
-            height: 220px;
+            height: 200px;
             object-fit: cover;
-            border-radius: 22px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 20px;
         }
 
         .view-hidden { display: none; }
 
+        /* iOS tap effect */
         .btn-tap {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
         .btn-tap:active {
-            transform: scale(0.94);
+            transform: scale(0.96);
+            background: rgba(255, 255, 255, 0.25);
         }
 
         @keyframes slideUp {
@@ -105,120 +102,103 @@
 
     <div class="w-full max-w-md">
         
-        <!-- HOME SCREEN -->
-        <div id="home-screen" class="space-y-8 py-4">
+        <div id="home-screen" class="space-y-6 py-4">
             
-            <!-- School Identity -->
             <div class="text-center space-y-1">
                 <h1 class="school-name text-4xl font-extrabold tracking-tight flex flex-col leading-none">
                     <span class="everest">EVEREST</span>
                     <span class="academy">ACADEMY</span>
                     <span class="school">SCHOOL</span>
                 </h1>
-                <p class="text-[10px] text-slate-400 font-bold tracking-[0.25em] pt-1">
+                <p class="text-[10px] text-white/70 font-bold tracking-[0.25em] pt-2">
                     GODAWARI 02 ATTARIYA, KAILALI
                 </p>
             </div>
 
-            <!-- Photo Frame -->
             <div class="photo-frame glass">
                 <img src="school.png" alt="Everest Academy" onerror="this.src='https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=800&q=80'">
             </div>
 
-            <!-- Slogan Section -->
             <div class="text-center px-2">
                 <p class="slogan-text text-xl font-bold italic leading-tight">
                     "We believe in Modern way of Learning for Deep Knowledge"
                 </p>
             </div>
 
-            <!-- Class Identifier -->
-            <div class="text-center">
-                <h2 class="text-red-500 font-black text-3xl italic tracking-tighter drop-shadow-lg">
-                    SCIENCE CLASS 5
+            <div class="text-center pt-2">
+                <h2 class="text-white font-black text-2xl tracking-tight drop-shadow-md">
+                    Science Class 5
                 </h2>
             </div>
 
-            <!-- Main Categories -->
-            <div class="space-y-5 pt-2">
+            <div class="space-y-4 pt-2">
 
-                <!-- Important Knowledge Full Width -->
-                <button onclick="openCategory('0', 'Important Knowledge')" class="glass p-5 w-full text-left btn-tap group relative overflow-hidden">
+                <button onclick="openCategory('0', 'Virtual Labs')" class="glass p-5 w-full text-left btn-tap group relative overflow-hidden">
                     <div class="flex items-center justify-between">
                         <div class="flex flex-col">
-                            <span class="text-[10px] text-amber-400 font-bold uppercase tracking-widest mb-1">Essential Learning</span>
-                            <span class="text-xl font-extrabold group-hover:translate-x-1 transition-transform leading-tight text-white">Important Knowledge</span>
+                            <span class="text-[11px] text-blue-200 font-bold uppercase tracking-widest mb-1">Folder 0</span>
+                            <span class="text-2xl font-bold group-hover:translate-x-1 transition-transform leading-tight text-white">Virtual Labs</span>
                         </div>
-                        <div class="bg-amber-500/20 p-3 rounded-2xl">
-                            <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                         </div>
                     </div>
                 </button>
                 
-                <!-- Chapter 1 Row -->
-                <div class="flex gap-3">
-                    <button onclick="openCategory('1', 'Scientific Learning')" class="glass p-5 flex-1 text-left btn-tap group">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1">Chapter 01</span>
-                            <span class="text-lg font-bold group-hover:translate-x-1 transition-transform leading-tight">Scientific Learning</span>
-                        </div>
-                    </button>
-                    <a href="1/Test.html" class="glass-red w-32 flex flex-col items-center justify-center btn-tap group text-center no-underline text-white">
-                        <svg class="w-7 h-7 text-red-500 mb-1 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                        <span class="text-[10px] font-black uppercase tracking-tighter text-red-100">Chapter Wise<br>Test</span>
-                    </a>
-                </div>
-
-                <!-- Chapter 2 Row -->
-                <div class="flex gap-3">
-                    <button onclick="openCategory('2', 'Measurement')" class="glass p-5 flex-1 text-left btn-tap group">
-                        <div class="flex flex-col">
-                            <span class="text-[10px] text-purple-400 font-bold uppercase tracking-widest mb-1">Chapter 02</span>
-                            <span class="text-lg font-bold group-hover:translate-x-1 transition-transform leading-tight">Measurement</span>
-                        </div>
-                    </button>
-                    <a href="2/Test.html" class="glass-red w-32 flex flex-col items-center justify-center btn-tap group text-center no-underline text-white">
-                        <svg class="w-7 h-7 text-red-500 mb-1 drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                        <span class="text-[10px] font-black uppercase tracking-tighter text-red-100">Chapter Wise<br>Test</span>
-                    </a>
+                <div class="pt-4">
+                    <h3 class="text-sm font-semibold text-white/80 uppercase tracking-wider mb-3 px-1">Study Materials</h3>
+                    <div class="grid gap-3">
+                        <a href="1/Newton's.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                            <span class="font-semibold text-md">Newton's Universal Law of Gravity</span>
+                            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                        <a href="1/Free.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                            <span class="font-semibold text-md">Free fall and Weightlessness</span>
+                            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                        <a href="1/Gravity.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                            <span class="font-semibold text-md">Gravity and Gravitational Force</span>
+                            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                        <a href="1/Pascal's.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                            <span class="font-semibold text-md">Pascal's Law</span>
+                            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                        <a href="1/Electricity.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                            <span class="font-semibold text-md">Electricity</span>
+                            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                        <a href="1/Magnetism.html" class="glass p-4 flex items-center justify-between no-underline text-white btn-tap">
+                            <span class="font-semibold text-md">Magnetism</span>
+                            <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </a>
+                    </div>
                 </div>
 
             </div>
         </div>
 
-        <!-- SUBTOPICS SCREEN -->
         <div id="sub-screen" class="view-hidden space-y-6 py-4">
             <div class="flex items-center gap-4">
-                <button onclick="goBack()" class="glass p-3 btn-tap">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                <button onclick="goBack()" class="glass p-3 btn-tap flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
-                <h3 id="category-title" class="text-2xl font-bold text-white tracking-tight">Topics</h3>
+                <h3 id="category-title" class="text-2xl font-bold text-white tracking-tight">Virtual Labs</h3>
             </div>
 
             <div id="topic-container" class="grid gap-3">
-                <!-- Topics will be injected here -->
-            </div>
+                </div>
         </div>
 
     </div>
 
     <script>
+        // Folder 0 data
         const studyData = {
             "0": [
-                "Photosynthesis",
-                "States of Matter",
-                "Solar System",
-                "Periodic Table"
-            ],
-            "1": [
-                "Scientific Learning Process",
-                "Observation",
-                "Experiment lesson 1",
-                "Experiment lesson 2"
-            ],
-            "2": [
-                "Measurement of mass",
-                "Measurement of volumne"
+                "Hydrolysis",
+                "Ammonia Gas Lab Preparation",
+                "CO2 Gas Lab preparation"
             ]
         };
 
@@ -235,18 +215,22 @@
             
             topics.forEach((topic, index) => {
                 const link = document.createElement('a');
-                link.href = `${id}/${topic}.html`;
+                
+                // Extracts the first word from the topic string to use for the URL
+                const firstWord = topic.split(' ')[0];
+                link.href = `${id}/${firstWord}.html`;
+                
                 link.className = `glass p-5 flex items-center justify-between no-underline text-white btn-tap opacity-0 translate-y-4`;
                 link.style.animation = `slideUp 0.4s ease forwards ${index * 0.1}s`;
                 
                 link.innerHTML = `
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center font-black text-sm text-blue-300">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-bold text-sm text-white backdrop-blur-sm">
                             0${index + 1}
                         </div>
                         <span class="font-semibold text-lg leading-tight">${topic}</span>
                     </div>
-                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                    <svg class="w-5 h-5 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                 `;
                 topicContainer.appendChild(link);
             });
@@ -264,4 +248,3 @@
     </script>
 </body>
 </html>
-
