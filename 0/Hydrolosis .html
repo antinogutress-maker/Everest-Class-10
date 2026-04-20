@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realistic Virtual Lab: Electrolysis</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for scientific formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #020617; /* Very dark slate */
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+        }
+        .nepali-text {
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+        
+        /* Buttons & Toggles */
+        .btn-action {
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(14, 165, 233, 0.6); }
+        .btn-action:active { transform: scale(0.95); }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 20px; width: 20px;
+            border-radius: 50%; background: #38bdf8; cursor: pointer; margin-top: -7px;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: #334155; border-radius: 3px;
+        }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+        .toggle-checkbox { right: 0; z-index: 1; border-color: #cbd5e1; transition: all 0.3s; }
+        .toggle-label { background-color: #475569; transition: all 0.3s; }
+
+        /* Realistic Visual Effects */
+        .glow-h2 { filter: drop-shadow(0 0 3px #93c5fd); }
+        .glow-o2 { filter: drop-shadow(0 0 3px #fca5a5); }
+        .water-fill { transition: height 0.1s linear, y 0.1s linear; }
+        
+        /* Dashboard Cards */
+        .dash-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <div class="max-w-5xl w-full space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                Interactive Electrolysis Lab
+            </h1>
+            <p class="text-xl text-slate-400 nepali-text not-italic">पानीको विद्युत् विच्छेदन प्रयोगशाला</p>
+        </header>
+
+        <!-- 1. TOP CONTROLS -->
+        <section class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
+            <!-- Voltage Control -->
+            <div class="w-full md:w-1/2 space-y-3">
+                <div class="flex justify-between text-sm font-bold text-sky-400">
+                    <span>DC Power Supply (\(V\))</span>
+                    <span id="voltage-val" class="text-white font-mono bg-slate-900 px-3 py-1 rounded border border-slate-700">0 V</span>
+                </div>
+                <input type="range" id="voltage-slider" min="0" max="24" value="0" step="1">
+            </div>
+
+            <!-- Electrolyte Toggle & Reset -->
+            <div class="w-full md:w-1/2 flex justify-between items-center bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <div class="flex items-center gap-4">
+                    <div class="relative inline-block w-14 h-7 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" name="toggle" id="electrolyte-toggle" class="toggle-checkbox absolute block w-7 h-7 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                        <label for="electrolyte-toggle" class="toggle-label block overflow-hidden h-7 rounded-full bg-gray-400 cursor-pointer"></label>
+                    </div>
+                    <div>
+                        <span class="text-sm font-bold text-emerald-400 block">Add Electrolyte (Salt)</span>
+                        <span class="text-[10px] text-slate-400">Makes pure water conductive</span>
+                    </div>
+                </div>
+                <button id="btn-reset" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold text-white text-sm uppercase transition shadow">
+                    Reset
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. REALISTIC SIMULATION CANVAS -->
+        <section class="w-full bg-[#080c14] rounded-2xl border-2 border-slate-800 relative h-[500px] overflow-hidden shadow-2xl flex justify-center items-end pb-4">
+            
+            <svg id="lab-canvas" width="100%" height="100%" viewBox="0 0 800 500" preserveAspectRatio="xMidYMax meet">
+                <defs>
+                    <!-- Water Gradient -->
+                    <linearGradient id="water-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(14, 165, 233, 0.2)" />
+                        <stop offset="100%" stop-color="rgba(2, 132, 199, 0.6)" />
+                    </linearGradient>
+                    <!-- Glass Reflection -->
+                    <linearGradient id="glass-shine" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+                        <stop offset="15%" stop-color="rgba(255,255,255,0.3)" />
+                        <stop offset="30%" stop-color="rgba(255,255,255,0.0)" />
+                        <stop offset="85%" stop-color="rgba(255,255,255,0.0)" />
+                        <stop offset="100%" stop-color="rgba(255,255,255,0.1)" />
+                    </linearGradient>
+                    <!-- Graphite Texture -->
+                    <linearGradient id="graphite-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#1e293b" />
+                        <stop offset="50%" stop-color="#475569" />
+                        <stop offset="100%" stop-color="#0f172a" />
+                    </linearGradient>
+                    <!-- Bubble Gradients -->
+                    <radialGradient id="bubble-h2" cx="30%" cy="30%" r="70%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="100%" stop-color="rgba(147, 197, 253, 0.5)" />
+                    </radialGradient>
+                    <radialGradient id="bubble-o2" cx="30%" cy="30%" r="70%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="100%" stop-color="rgba(252, 165, 165, 0.5)" />
+                    </radialGradient>
+                </defs>
+
+                <!-- Background Lab Grid -->
+                <g opacity="0.05" stroke="#ffffff" stroke-width="1">
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none"/></pattern>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                </g>
+
+                <!-- Wiring & Power Unit -->
+                <g id="wiring">
+                    <rect x="330" y="420" width="140" height="50" fill="#0f172a" stroke="#334155" stroke-width="3" rx="6"/>
+                    <!-- Power Lights -->
+                    <circle id="power-led" cx="350" cy="445" r="5" fill="#ef4444" />
+                    <text x="400" y="450" fill="#94a3b8" text-anchor="middle" font-weight="bold" font-size="16" letter-spacing="2">DC POWER</text>
+                    
+                    <!-- Wires -->
+                    <path d="M 330,445 L 260,445 L 260,360" fill="none" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
+                    <path d="M 470,445 L 540,445 L 540,360" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round"/>
+                </g>
+
+                <!-- Beaker Back Wall -->
+                <path d="M 150,150 L 150,380 Q 150,400 170,400 L 630,400 Q 650,400 650,380 L 650,150" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.1)" stroke-width="2"/>
+
+                <!-- Main Water Pool -->
+                <rect id="beaker-water" x="153" y="200" width="494" height="197" fill="url(#water-grad)" class="transition-colors duration-500"/>
+                
+                <!-- Dissolved Salt Particles -->
+                <g id="salt-particles" opacity="0"></g>
+                
+                <!-- Water Surface Line (Meniscus) -->
+                <path d="M 153,200 Q 400,205 647,200" fill="none" stroke="rgba(56, 189, 248, 0.6)" stroke-width="3"/>
+
+                <!-- Beaker Front Glass Reflection -->
+                <path d="M 150,150 L 150,380 Q 150,400 170,400 L 630,400 Q 650,400 650,380 L 650,150" fill="url(#glass-shine)" stroke="rgba(255,255,255,0.5)" stroke-width="6" stroke-linecap="round" style="pointer-events: none;"/>
+                <!-- Measurement marks on Beaker -->
+                <g stroke="rgba(255,255,255,0.3)" stroke-width="2">
+                    <line x1="150" y1="200" x2="170" y2="200"/><text x="180" y="205" fill="rgba(255,255,255,0.3)" font-size="12">1L</text>
+                    <line x1="150" y1="250" x2="160" y2="250"/>
+                    <line x1="150" y1="300" x2="170" y2="300"/><text x="180" y="305" fill="rgba(255,255,255,0.3)" font-size="12">500ml</text>
+                </g>
+
+                <!-- CATHODE SIDE (Left - Hydrogen) -->
+                <g id="cathode-group" transform="translate(260, 0)">
+                    <!-- Electrode -->
+                    <rect x="-15" y="280" width="30" height="110" fill="url(#graphite-grad)" stroke="#020617" stroke-width="2" rx="2"/>
+                    <text x="0" y="415" fill="#60a5fa" text-anchor="middle" font-weight="bold" font-size="18">CATHODE (-)</text>
+                    
+                    <!-- Tube Glass Back -->
+                    <path d="M -35,320 L -35,50 Q -35,20 0,20 Q 35,20 35,50 L 35,320" fill="rgba(255,255,255,0.05)"/>
+                    
+                    <!-- Gas Space -->
+                    <rect x="-32" y="23" width="64" height="0" fill="rgba(255,255,255,0.15)" id="h2-gas-space"/>
+                    
+                    <!-- Tube Water Column -->
+                    <rect x="-32" y="23" width="64" height="297" class="water-fill" fill="url(#water-grad)" id="h2-water-col"/>
+
+                    <!-- Tube Glass Front & Reflections -->
+                    <path d="M -35,320 L -35,50 Q -35,20 0,20 Q 35,20 35,50 L 35,320" fill="url(#glass-shine)" stroke="rgba(255,255,255,0.7)" stroke-width="4"/>
+                    
+                    <!-- Tube Measurement Ticks -->
+                    <g stroke="rgba(255,255,255,0.5)" stroke-width="1.5">
+                        <line x1="-35" y1="50" x2="-25" y2="50"/> <line x1="-35" y1="100" x2="-20" y2="100"/>
+                        <line x1="-35" y1="150" x2="-25" y2="150"/> <line x1="-35" y1="200" x2="-20" y2="200"/>
+                        <line x1="-35" y1="250" x2="-25" y2="250"/> <line x1="-35" y1="300" x2="-20" y2="300"/>
+                    </g>
+                    <!-- Bubbles -->
+                    <g id="h2-bubbles"></g>
+                </g>
+
+                <!-- ANODE SIDE (Right - Oxygen) -->
+                <g id="anode-group" transform="translate(540, 0)">
+                    <!-- Electrode -->
+                    <rect x="-15" y="280" width="30" height="110" fill="url(#graphite-grad)" stroke="#020617" stroke-width="2" rx="2"/>
+                    <text x="0" y="415" fill="#f87171" text-anchor="middle" font-weight="bold" font-size="18">ANODE (+)</text>
+                    
+                    <!-- Tube Glass Back -->
+                    <path d="M -35,320 L -35,50 Q -35,20 0,20 Q 35,20 35,50 L 35,320" fill="rgba(255,255,255,0.05)"/>
+                    
+                    <!-- Gas Space -->
+                    <rect x="-32" y="23" width="64" height="0" fill="rgba(255,255,255,0.15)" id="o2-gas-space"/>
+                    
+                    <!-- Tube Water Column -->
+                    <rect x="-32" y="23" width="64" height="297" class="water-fill" fill="url(#water-grad)" id="o2-water-col"/>
+
+                    <!-- Tube Glass Front & Reflections -->
+                    <path d="M -35,320 L -35,50 Q -35,20 0,20 Q 35,20 35,50 L 35,320" fill="url(#glass-shine)" stroke="rgba(255,255,255,0.7)" stroke-width="4"/>
+                    
+                    <!-- Tube Measurement Ticks -->
+                    <g stroke="rgba(255,255,255,0.5)" stroke-width="1.5">
+                        <line x1="-35" y1="50" x2="-25" y2="50"/> <line x1="-35" y1="100" x2="-20" y2="100"/>
+                        <line x1="-35" y1="150" x2="-25" y2="150"/> <line x1="-35" y1="200" x2="-20" y2="200"/>
+                        <line x1="-35" y1="250" x2="-25" y2="250"/> <line x1="-35" y1="300" x2="-20" y2="300"/>
+                    </g>
+                    <!-- Bubbles -->
+                    <g id="o2-bubbles"></g>
+                </g>
+            </svg>
+        </section>
+
+        <!-- 3. LIVE DASHBOARD (Current & Reactions) -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <!-- Live Metrics -->
+            <div class="dash-card p-5 rounded-2xl flex flex-col justify-center items-center relative overflow-hidden">
+                <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2">Circuit Current (\(I\))</p>
+                <p id="current-val" class="text-4xl font-bold text-yellow-400 font-mono tracking-wider">0.00 A</p>
+                <!-- Warning Overlay -->
+                <div id="warning-msg" class="absolute inset-0 bg-red-900/90 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 px-4 text-center">
+                    <span class="text-2xl mb-1">⚠️</span>
+                    <span class="text-xs font-bold text-white uppercase tracking-wider">Pure Water Detected</span>
+                    <span class="text-[10px] text-red-200 mt-1">Add electrolyte to lower resistance!</span>
+                </div>
+            </div>
+
+            <!-- Gas Volumes -->
+            <div class="dash-card p-5 rounded-2xl flex flex-col justify-center gap-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                    <div>
+                        <span class="block text-sm font-bold text-blue-400">Hydrogen (\(H_2\))</span>
+                        <span class="text-[10px] text-slate-500">Collected at Cathode</span>
+                    </div>
+                    <span id="h2-vol" class="text-2xl font-mono text-white font-bold">0.0 mL</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="block text-sm font-bold text-red-400">Oxygen (\(O_2\))</span>
+                        <span class="text-[10px] text-slate-500">Collected at Anode</span>
+                    </div>
+                    <span id="o2-vol" class="text-2xl font-mono text-white font-bold">0.0 mL</span>
+                </div>
+            </div>
+
+            <!-- Chemical Equations -->
+            <div class="dash-card p-5 rounded-2xl flex flex-col justify-center gap-3">
+                <div class="border-l-4 border-blue-500 pl-3">
+                    <p class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Cathode Reaction (Reduction)</p>
+                    <p class="font-mono text-slate-200 text-sm mt-1">\( 4H_2O + 4e^- \rightarrow 2H_2(g) + 4OH^- \)</p>
+                </div>
+                <div class="border-l-4 border-red-500 pl-3">
+                    <p class="text-[10px] uppercase font-bold text-red-400 tracking-wider">Anode Reaction (Oxidation)</p>
+                    <p class="font-mono text-slate-200 text-sm mt-1">\( 2H_2O \rightarrow O_2(g) + 4H^+ + 4e^- \)</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 4. Conclusion -->
+        <section class="glass-panel p-6 rounded-2xl mb-12 border-l-4 border-cyan-500">
+            <h2 class="text-2xl font-semibold text-cyan-300 mb-4">Conclusion</h2>
+            <div class="space-y-4 bg-slate-900/80 p-6 rounded-xl border border-slate-700">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> In conclusion, the electrolysis of water requires two critical things: Direct Current (DC) and an Electrolyte. Because pure water lacks free-floating ions, it acts as an insulator (as shown by the warning). Once salt is added, the circuit completes. The simulation proves the chemical formula of water (\(H_2O\)) visually: because every water molecule has 2 Hydrogen atoms and 1 Oxygen atom, the volume of Hydrogen gas dropping the water level in the Cathode tube is exactly <strong>twice</strong> the volume of Oxygen collected in the Anode tube!
+                </p>
+                <p class="nepali-text text-lg leading-relaxed border-t border-slate-700 pt-4">
+                    <strong>नेपाली:</strong> निष्कर्षमा, पानीको विद्युत् विच्छेदनका लागि दुई महत्त्वपूर्ण कुराहरू चाहिन्छ: दिष्ट धार (DC) र इलेक्ट्रोलाइट। शुद्ध पानीमा स्वतन्त्र आयनहरू नहुने भएकोले, यसले इन्सुलेटर (विद्युत् नबग्ने) को रूपमा काम गर्छ (जसरी चेतावनीमा देखाइएको छ)। जब नुन थपिन्छ, करेन्ट बग्न थाल्छ। सिमुलेशनले पानीको रासायनिक सूत्र (\(H_2O\)) लाई दृश्यात्मक रूपमा प्रमाणित गर्छ: किनकि प्रत्येक पानीको अणुमा २ वटा हाइड्रोजन र १ वटा अक्सिजन परमाणु हुन्छन्, क्याथोड ट्युबमा पानीको सतह घटाउने हाइड्रोजन ग्यासको मात्रा एनोड ट्युबमा जम्मा हुने अक्सिजनको मात्रा भन्दा ठ्याक्कै <strong>दोब्बर</strong> हुन्छ!
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Virtual Lab Physics & Animation Engine -->
+    <script>
+        // DOM Elements
+        const voltageSlider = document.getElementById('voltage-slider');
+        const voltageVal = document.getElementById('voltage-val');
+        const electrolyteToggle = document.getElementById('electrolyte-toggle');
+        const currentVal = document.getElementById('current-val');
+        const warningMsg = document.getElementById('warning-msg');
+        const powerLed = document.getElementById('power-led');
+        
+        const h2VolText = document.getElementById('h2-vol');
+        const o2VolText = document.getElementById('o2-vol');
+        const h2WaterCol = document.getElementById('h2-water-col');
+        const h2GasSpace = document.getElementById('h2-gas-space');
+        const o2WaterCol = document.getElementById('o2-water-col');
+        const o2GasSpace = document.getElementById('o2-gas-space');
+        
+        const h2BubblesGrp = document.getElementById('h2-bubbles');
+        const o2BubblesGrp = document.getElementById('o2-bubbles');
+        const saltParticlesGrp = document.getElementById('salt-particles');
+        const beakerWater = document.getElementById('beaker-water');
+        const btnReset = document.getElementById('btn-reset');
+
+        // Lab Variables
+        let currentVolH2 = 0; // mL
+        let currentVolO2 = 0; // mL
+        const maxTubeVolume = 60; // Max volume for full tube visualization
+        const initialWaterHeight = 297; // Initial SVG height of water inside tube
+        
+        let activeBubblesH2 = [];
+        let activeBubblesO2 = [];
+        let labAnimFrame;
+
+        // Generate static salt particles for visuals
+        function generateSalt() {
+            saltParticlesGrp.innerHTML = '';
+            for(let i=0; i<60; i++) {
+                const x = 160 + Math.random() * 470;
+                const y = 210 + Math.random() * 180;
+                const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                dot.setAttribute("cx", x); dot.setAttribute("cy", y);
+                dot.setAttribute("r", 1 + Math.random()); dot.setAttribute("fill", "rgba(255,255,255,0.6)");
+                saltParticlesGrp.appendChild(dot);
+            }
+        }
+        generateSalt();
+
+        function spawnBubble(group, array, glowUrl, tubeLimitY) {
+            // Spawn anywhere along the width of the electrode (-15 to 15)
+            const xOffset = -12 + (Math.random() * 24); 
+            // Randomly spawn at different heights along the electrode for realism (280 to 380)
+            const startY = 280 + Math.random() * 100;
+            const size = 1.5 + Math.random() * 2.5;
+            
+            const b = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            b.setAttribute("cx", xOffset);
+            b.setAttribute("cy", startY);
+            b.setAttribute("r", size);
+            b.setAttribute("fill", `url(#${glowUrl})`);
+            
+            group.appendChild(b);
+            
+            // Speed varies, upward acceleration will be applied in loop
+            const baseSpeed = 0.5 + Math.random() * 1;
+            array.push({ el: b, y: startY, speed: baseSpeed, limitY: tubeLimitY, wobble: Math.random() * Math.PI * 2 });
+        }
+
+        let lastTime = 0;
+
+        function runLab(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = (timestamp - lastTime) / 1000; 
+            lastTime = timestamp;
+
+            const v = parseInt(voltageSlider.value);
+            const hasElectrolyte = electrolyteToggle.checked;
+
+            // Indicator LED
+            if(v > 0) powerLed.setAttribute("fill", "#22c55e"); // Green
+            else powerLed.setAttribute("fill", "#ef4444"); // Red
+
+            // Physics calculation (Pure water = high resistance, Salt water = low resistance)
+            const R = hasElectrolyte ? 8 : 15000; 
+            const I = v / R; 
+
+            // Update UI
+            voltageVal.innerText = v + " V";
+            currentVal.innerText = I.toFixed(2) + " A";
+
+            if (v > 0 && !hasElectrolyte) {
+                warningMsg.style.opacity = '1';
+            } else {
+                warningMsg.style.opacity = '0';
+            }
+
+            // Electrolysis Rate (H2 is strictly 2x O2)
+            if (I > 0) {
+                const reactionRate = I * 1.2; // Visual scaling factor
+                
+                // Add Volume
+                if (currentVolH2 < maxTubeVolume) {
+                    currentVolH2 += (reactionRate * 2) * dt; 
+                    currentVolO2 += reactionRate * dt;
+                }
+
+                // Update text
+                h2VolText.innerText = currentVolH2.toFixed(1) + " mL";
+                o2VolText.innerText = currentVolO2.toFixed(1) + " mL";
+
+                // Update Tube Water Levels physically pushing down
+                const h2Ratio = Math.min(currentVolH2 / maxTubeVolume, 1);
+                const o2Ratio = Math.min(currentVolO2 / maxTubeVolume, 1);
+
+                const h2Drop = initialWaterHeight * h2Ratio;
+                h2WaterCol.setAttribute('y', 23 + h2Drop);
+                h2WaterCol.setAttribute('height', Math.max(0, initialWaterHeight - h2Drop));
+                h2GasSpace.setAttribute('height', h2Drop);
+
+                const o2Drop = initialWaterHeight * o2Ratio;
+                o2WaterCol.setAttribute('y', 23 + o2Drop);
+                o2WaterCol.setAttribute('height', Math.max(0, initialWaterHeight - o2Drop));
+                o2GasSpace.setAttribute('height', o2Drop);
+
+                // Spawn Bubbles (Hydrogen spawns much more frequently)
+                if (Math.random() < I * 0.6 && currentVolH2 < maxTubeVolume) {
+                    spawnBubble(h2BubblesGrp, activeBubblesH2, 'bubble-h2', 23 + h2Drop);
+                }
+                if (Math.random() < I * 0.3 && currentVolO2 < maxTubeVolume) {
+                    spawnBubble(o2BubblesGrp, activeBubblesO2, 'bubble-o2', 23 + o2Drop);
+                }
+            }
+
+            // Animate H2 Bubbles
+            for (let i = activeBubblesH2.length - 1; i >= 0; i--) {
+                let b = activeBubblesH2[i];
+                b.speed += 0.05; // Upward Acceleration
+                b.y -= b.speed;
+                const wobbleX = Math.sin(b.y * 0.08 + b.wobble) * 2.5; // Smooth realistic wobble
+                
+                if (b.y <= b.limitY) {
+                    b.el.remove();
+                    activeBubblesH2.splice(i, 1); // Pop!
+                } else {
+                    b.el.setAttribute('cy', b.y);
+                    b.el.setAttribute('cx', parseFloat(b.el.getAttribute('cx') || 0) * 0.85 + wobbleX * 0.15); 
+                }
+            }
+
+            // Animate O2 Bubbles
+            for (let i = activeBubblesO2.length - 1; i >= 0; i--) {
+                let b = activeBubblesO2[i];
+                b.speed += 0.05; 
+                b.y -= b.speed;
+                const wobbleX = Math.sin(b.y * 0.08 + b.wobble) * 2.5;
+                
+                if (b.y <= b.limitY) {
+                    b.el.remove();
+                    activeBubblesO2.splice(i, 1);
+                } else {
+                    b.el.setAttribute('cy', b.y);
+                    b.el.setAttribute('cx', parseFloat(b.el.getAttribute('cx') || 0) * 0.85 + wobbleX * 0.15);
+                }
+            }
+
+            labAnimFrame = requestAnimationFrame(runLab);
+        }
+
+        // Toggle Electrolyte Visually
+        electrolyteToggle.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                saltParticlesGrp.setAttribute("opacity", "1");
+                beakerWater.style.fill = "url(#water-grad)"; 
+                beakerWater.style.opacity = "0.9";
+            } else {
+                saltParticlesGrp.setAttribute("opacity", "0");
+                beakerWater.style.fill = "url(#water-grad)";
+                beakerWater.style.opacity = "0.6";
+            }
+        });
+
+        // Reset Lab
+        btnReset.addEventListener('click', () => {
+            currentVolH2 = 0;
+            currentVolO2 = 0;
+            
+            h2VolText.innerText = "0.0 mL";
+            o2VolText.innerText = "0.0 mL";
+            
+            h2WaterCol.setAttribute('y', 23);
+            h2WaterCol.setAttribute('height', initialWaterHeight);
+            h2GasSpace.setAttribute('height', 0);
+            
+            o2WaterCol.setAttribute('y', 23);
+            o2WaterCol.setAttribute('height', initialWaterHeight);
+            o2GasSpace.setAttribute('height', 0);
+
+            h2BubblesGrp.innerHTML = '';
+            o2BubblesGrp.innerHTML = '';
+            activeBubblesH2 = [];
+            activeBubblesO2 = [];
+            
+            // Optionally drop voltage to zero on reset
+            // voltageSlider.value = 0;
+        });
+
+        // Start Physics Engine Loop
+        labAnimFrame = requestAnimationFrame(runLab);
+
+    </script>
+</body>
+</html>
+

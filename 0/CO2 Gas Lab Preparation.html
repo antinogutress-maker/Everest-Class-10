@@ -1,0 +1,472 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Lab: Preparation of CO2 Gas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for scientific formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #020617; /* Very dark slate */
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(168, 85, 247, 0.15);
+        }
+        .nepali-text {
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 0.5rem;
+        }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 22px; width: 22px;
+            border-radius: 50%; background: #38bdf8; cursor: pointer; margin-top: -8px;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.8);
+            border: 2px solid #fff;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: #334155; border-radius: 3px;
+        }
+
+        /* Dashboard Cards */
+        .dash-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        /* Liquid Pouring Animation */
+        @keyframes pour {
+            0% { stroke-dashoffset: 20; }
+            100% { stroke-dashoffset: 0; }
+        }
+        .liquid-pour {
+            stroke-dasharray: 10 5;
+            animation: pour 0.4s linear infinite;
+        }
+
+        /* Particle effects */
+        .particle-co2 { filter: drop-shadow(0 0 2px #ffffff); opacity: 0.8; }
+        
+        /* Smooth Transitions */
+        .acid-fill { transition: height 0.3s ease-out, y 0.3s ease-out; }
+        #co2-gas-fill { transition: height 0.2s linear, y 0.2s linear; }
+        #bubbling-mixture { transition: opacity 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <div class="max-w-6xl w-full space-y-8">
+        
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500">
+                Laboratory Preparation of Carbon Dioxide (\(CO_2\))
+            </h1>
+            <p class="text-xl text-slate-400 nepali-text not-italic">प्रयोगशालामा कार्बन डाइअक्साइड ग्यासको निर्माण</p>
+        </header>
+
+        <!-- 1. TOP CONTROLS -->
+        <section class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl border-t border-sky-500/30">
+            <!-- Acid Control -->
+            <div class="w-full md:w-1/2 space-y-3">
+                <div class="flex justify-between text-sm font-bold text-sky-400">
+                    <span>Pour Dilute HCl Acid</span>
+                    <span id="acid-val" class="text-white font-mono bg-slate-900 px-3 py-1 rounded border border-slate-700">0 mL</span>
+                </div>
+                <input type="range" id="acid-slider" min="0" max="100" value="0">
+            </div>
+
+            <!-- Reaction Status & Reset -->
+            <div class="w-full md:w-1/2 flex justify-between items-center bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+                <div>
+                    <span class="text-sm font-bold text-slate-400 block" id="reaction-status">Add acid to start...</span>
+                    <span class="text-[10px] text-slate-500" id="funnel-status">Thistle funnel is dry.</span>
+                </div>
+                <button id="btn-reset" class="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-lg font-bold text-white text-sm uppercase transition shadow">
+                    Reset Lab
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. FLAWLESS REALISTIC SIMULATION CANVAS -->
+        <section class="w-full bg-[#080c14] rounded-2xl border-2 border-slate-800 relative h-[550px] overflow-hidden shadow-2xl flex justify-center items-end pb-4">
+            
+            <svg id="lab-canvas" width="100%" height="100%" viewBox="0 0 900 550" preserveAspectRatio="xMidYMax meet">
+                <defs>
+                    <!-- Glass Shine Gradient -->
+                    <linearGradient id="glass-shine" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+                        <stop offset="20%" stop-color="rgba(255,255,255,0.3)" />
+                        <stop offset="40%" stop-color="rgba(255,255,255,0.0)" />
+                        <stop offset="80%" stop-color="rgba(255,255,255,0.0)" />
+                        <stop offset="100%" stop-color="rgba(255,255,255,0.15)" />
+                    </linearGradient>
+                    <!-- Acid Gradient -->
+                    <linearGradient id="acid-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(56, 189, 248, 0.3)" />
+                        <stop offset="100%" stop-color="rgba(2, 132, 199, 0.6)" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Background Grid -->
+                <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+                    <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse"><path d="M 25 0 L 0 0 0 25" fill="none"/></pattern>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                </g>
+
+                <!-- Laboratory Table Base -->
+                <rect x="50" y="480" width="800" height="20" fill="#1e293b" rx="5"/>
+                <rect x="50" y="480" width="800" height="4" fill="#334155"/>
+
+                <!-- WOULFE'S BOTTLE (Two-neck Flask) -->
+                <g id="woulfes-bottle" transform="translate(250, 0)">
+                    
+                    <!-- Dynamic Acid Fill (Max y=320, Base y=470) -->
+                    <rect id="bottle-acid" x="-65" y="470" width="130" height="0" fill="url(#acid-grad)" class="acid-fill" rx="10"/>
+                    <path id="acid-surface" d="M -65 470 L 65 470" stroke="rgba(56, 189, 248, 0.8)" stroke-width="2" fill="none" opacity="0" class="acid-fill"/>
+
+                    <!-- Marble Chips (CaCO3) -->
+                    <g id="marble-chips">
+                        <polygon points="-50,470 -40,455 -25,460 -30,475" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+                        <polygon points="-20,475 -10,445 10,450 5,475" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1"/>
+                        <polygon points="15,475 25,455 45,465 40,475" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1"/>
+                        <polygon points="-35,460 -20,440 -5,445 -15,465" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1"/>
+                        <polygon points="5,455 20,440 35,450 20,465" fill="#f8fafc" stroke="#94a3b8" stroke-width="1"/>
+                        <text x="0" y="425" fill="#94a3b8" font-size="12" font-weight="bold" text-anchor="middle">Marble Chips (CaCO₃)</text>
+                    </g>
+
+                    <!-- Bubbling Effervescence Animation (Hidden initially) -->
+                    <g id="bubbling-mixture" opacity="0">
+                        <circle cx="-30" cy="440" r="3" fill="#ffffff" class="particle-co2" style="animation: pour 1s infinite alternate;"/>
+                        <circle cx="0" cy="435" r="4" fill="#ffffff" class="particle-co2" style="animation: pour 0.8s infinite alternate-reverse;"/>
+                        <circle cx="30" cy="445" r="2.5" fill="#ffffff" class="particle-co2" style="animation: pour 1.2s infinite alternate;"/>
+                        <circle cx="-15" cy="450" r="3.5" fill="#ffffff" class="particle-co2" style="animation: pour 0.9s infinite alternate-reverse;"/>
+                    </g>
+
+                    <!-- Glass Bottle Body -->
+                    <rect x="-70" y="300" width="140" height="175" rx="30" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="4"/>
+                    <!-- Left Neck (Thistle Funnel) -->
+                    <rect x="-40" y="250" width="26" height="55" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="4"/>
+                    <line x1="-40" y1="300" x2="-14" y2="300" stroke="#080c14" stroke-width="6"/> <!-- Erase inner line -->
+                    <path d="M -44 250 L -10 250" stroke="rgba(255,255,255,0.6)" stroke-width="5"/> <!-- Rim -->
+                    <!-- Right Neck (Delivery Tube) -->
+                    <rect x="14" y="250" width="26" height="55" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.6)" stroke-width="4"/>
+                    <line x1="14" y1="300" x2="40" y2="300" stroke="#080c14" stroke-width="6"/> <!-- Erase inner line -->
+                    <path d="M 10 250 L 44 250" stroke="rgba(255,255,255,0.6)" stroke-width="5"/> <!-- Rim -->
+
+                    <!-- Rubber Corks -->
+                    <rect x="-37" y="240" width="20" height="15" fill="#78350f"/> <!-- Left -->
+                    <rect x="17" y="240" width="20" height="15" fill="#78350f"/> <!-- Right -->
+
+                    <!-- Glass Shine -->
+                    <rect x="-70" y="300" width="140" height="175" rx="30" fill="url(#glass-shine)" style="pointer-events: none;"/>
+                </g>
+
+                <!-- THISTLE FUNNEL -->
+                <g id="thistle-funnel" transform="translate(223, 0)">
+                    <!-- Pouring Acid Animation -->
+                    <path id="pour-stream" d="M 0 120 L 0 460" fill="none" stroke="#38bdf8" stroke-width="4" class="liquid-pour" opacity="0"/>
+                    
+                    <!-- Funnel Cup -->
+                    <path d="M -20 80 L 20 80 L 10 130 L -10 130 Z" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.8)" stroke-width="3"/>
+                    <!-- Funnel Stem (Extends deep into the bottle to be submerged) -->
+                    <rect x="-4" y="130" width="8" height="330" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.8)" stroke-width="3"/>
+                    
+                    <!-- Acid Fill inside Funnel -->
+                    <polygon id="funnel-acid-cup" points="-16,90 16,90 8,130 -8,130" fill="url(#acid-grad)" opacity="0"/>
+                    <text x="0" y="70" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">Dil. HCl</text>
+                </g>
+
+                <!-- UPRIGHT GAS JAR -->
+                <g id="gas-jar" transform="translate(650, 0)">
+                    <!-- Gas Jar Support Block -->
+                    <rect x="-40" y="475" width="80" height="5" fill="#cbd5e1"/>
+
+                    <!-- Jar Body (Back) -->
+                    <path d="M -35 220 L -35 470 Q -35 480 0 480 Q 35 480 35 470 L 35 220" fill="rgba(255,255,255,0.02)"/>
+                    
+                    <!-- Dynamic CO2 Gas Fill (Fills bottom-up) -->
+                    <!-- Base is y=475, Max height is 255 (up to y=220) -->
+                    <rect id="co2-gas-fill" x="-32" y="475" width="64" height="0" fill="rgba(226, 232, 240, 0.4)"/>
+                    
+                    <!-- Glass Outline -->
+                    <path d="M -35 220 L -35 470 Q -35 480 0 480 Q 35 480 35 470 L 35 220" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="4"/>
+                    <!-- Open Top Rim -->
+                    <path d="M -42 220 L 42 220" stroke="rgba(255,255,255,0.6)" stroke-width="6"/> 
+                    
+                    <text x="75" y="450" fill="#f1f5f9" font-size="14" font-weight="bold">CO₂ Gas</text>
+                    <text x="-60" y="200" fill="#94a3b8" font-size="12" text-anchor="middle">Air pushed UP</text>
+                    <path d="M -45 190 L -45 160 M -55 170 L -45 155 L -35 170" fill="none" stroke="#94a3b8" stroke-width="2"/> <!-- Up arrow -->
+
+                    <!-- Glass Reflection -->
+                    <path d="M -35 220 L -35 470 Q -35 480 0 480 Q 35 480 35 470 L 35 220" fill="url(#glass-shine)" style="pointer-events: none;"/>
+                </g>
+
+                <!-- DELIVERY TUBES & PARTICLE PATHS -->
+                <g id="delivery-system">
+                    <!-- Tube Outline (Flask -> Up -> Over -> Down into Gas Jar) -->
+                    <!-- Starts at Right Neck Cork: 277, 240 -->
+                    <!-- Bends right: 277, 160 -->
+                    <!-- Travels to Gas Jar: 650, 160 -->
+                    <!-- Drops deep into Gas Jar: 650, 450 -->
+                    <path d="M 277 245 L 277 160 Q 277 140 297 140 L 630 140 Q 650 140 650 160 L 650 450" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="8"/>
+                    
+                    <!-- Hollow Core (Path for Particles to follow) -->
+                    <path id="delivery-path" d="M 277 245 L 277 160 Q 277 140 297 140 L 630 140 Q 650 140 650 160 L 650 450" fill="none" stroke="transparent" stroke-width="2"/>
+                </g>
+
+                <!-- DYNAMIC PARTICLES LAYER -->
+                <g id="particles-layer"></g>
+                
+            </svg>
+        </section>
+
+        <!-- 3. LIVE DASHBOARD (Chemical Reactions & Stats) -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Live Metrics -->
+            <div class="dash-card p-5 rounded-2xl flex flex-col justify-center gap-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                    <div>
+                        <span class="block text-sm font-bold text-sky-400">HCl Volume Added</span>
+                        <span class="text-[10px] text-slate-500">Thistle funnel must be submerged</span>
+                    </div>
+                    <span id="acid-metric" class="text-3xl font-mono text-white font-bold">0 mL</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="block text-sm font-bold text-emerald-400">CO₂ Collected</span>
+                        <span class="text-[10px] text-slate-500">Collected by upward displacement of air</span>
+                    </div>
+                    <span id="gas-vol" class="text-3xl font-mono text-white font-bold">0%</span>
+                </div>
+            </div>
+
+            <!-- Chemical Equations -->
+            <div class="dash-card p-5 rounded-2xl flex flex-col justify-center gap-4">
+                <div class="border-l-4 border-sky-500 pl-3">
+                    <p class="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Room Temperature Reaction</p>
+                    <p class="font-mono text-slate-200 text-sm mt-1">\( CaCO_3 + 2HCl \rightarrow CaCl_2 + H_2O + CO_2 \uparrow \)</p>
+                </div>
+                <div class="border-l-4 border-slate-400 pl-3">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Physical Characteristics</p>
+                    <p class="text-sm text-slate-300 mt-1">CO₂ is a colorless gas, heavier than air. Because it is heavier, it settles at the bottom of the jar, pushing lighter air out the top.</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- 4. Conclusion -->
+        <section class="glass-panel p-6 rounded-2xl mb-12 border-l-4 border-sky-500">
+            <h2 class="text-2xl font-semibold text-sky-400 mb-4">Conclusion</h2>
+            <div class="space-y-4 bg-slate-900/80 p-6 rounded-xl border border-slate-700">
+                <p class="text-lg leading-relaxed">
+                    <strong>English:</strong> In conclusion, the laboratory preparation of Carbon Dioxide ($CO_2$) is done by reacting marble chips (Calcium Carbonate) with dilute Hydrochloric acid at room temperature—no heating is required! A crucial safety mechanism is ensuring the stem of the <strong>thistle funnel dips below the acid level</strong>; otherwise, the gas will escape through the funnel instead of the delivery tube. Finally, because $CO_2$ is heavier than air, it is collected in an upright gas jar by the <strong>upward displacement of air</strong>.
+                </p>
+                <p class="nepali-text text-lg leading-relaxed border-t border-slate-700 pt-4">
+                    <strong>नेपाली:</strong> निष्कर्षमा, प्रयोगशालामा कार्बन डाइअक्साइड ($CO_2$) ग्यास बनाउन मार्बलका टुक्राहरू (क्याल्सियम कार्बोनेट) र फिका हाइड्रोक्लोरिक एसिडलाई कोठाको तापक्रममा प्रतिक्रिया गराइन्छ—यसलाई तताउनु पर्दैन! एउटा महत्त्वपूर्ण सुरक्षा उपाय भनेको <strong>थिस्टल फनेलको तल्लो भाग एसिडको सतहभन्दा तल डुबेको</strong> हुनुपर्छ; अन्यथा, ग्यास डेलिभरी ट्युबको सट्टा फनेलबाटै बाहिर निस्कन्छ। अन्ततः, $CO_2$ ग्यास हावा भन्दा भारी हुने भएकोले, यसलाई ठाडो ग्यास जारमा हावालाई माथि धकेलेर (<strong>Upward displacement of air</strong>) जम्मा गरिन्छ।
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Virtual Lab Physics & Animation Engine -->
+    <script>
+        // DOM Elements
+        const acidSlider = document.getElementById('acid-slider');
+        const acidValText = document.getElementById('acid-val');
+        const acidMetric = document.getElementById('acid-metric');
+        
+        const reactionStatus = document.getElementById('reaction-status');
+        const funnelStatus = document.getElementById('funnel-status');
+        const btnReset = document.getElementById('btn-reset');
+        
+        const bottleAcid = document.getElementById('bottle-acid');
+        const acidSurface = document.getElementById('acid-surface');
+        const pourStream = document.getElementById('pour-stream');
+        const funnelAcidCup = document.getElementById('funnel-acid-cup');
+        
+        const bubblingMixture = document.getElementById('bubbling-mixture');
+        const particlesLayer = document.getElementById('particles-layer');
+        const co2GasFill = document.getElementById('co2-gas-fill');
+        const gasVolText = document.getElementById('gas-vol');
+        
+        // Exact SVG Path for particle tracking
+        const deliveryPath = document.getElementById('delivery-path');
+        const pathLen = deliveryPath.getTotalLength();
+
+        // Lab State Variables
+        let acidLevel = 0; // 0 to 100
+        let gasCollected = 0; // %
+        const SUBMERGE_THRESHOLD = 30; // Level where thistle funnel is safely underwater
+        
+        let activeParticles = [];
+        let labAnimFrame;
+        let lastTime = 0;
+
+        // Particle Spawner (CO2 Gas)
+        function spawnParticle() {
+            const p = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            p.setAttribute("r", 2 + Math.random() * 1.5);
+            p.setAttribute("fill", "#ffffff");
+            p.setAttribute("class", "particle-co2");
+            
+            particlesLayer.appendChild(p);
+            
+            // Speed of gas flowing through tube (100 to 150 px per second)
+            const speed = 100 + Math.random() * 50; 
+            
+            activeParticles.push({
+                el: p,
+                distance: 0,
+                speed: speed,
+                wobbleOffset: Math.random() * Math.PI * 2
+            });
+        }
+
+        // Main Physics Loop
+        function runLab(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            const dt = (timestamp - lastTime) / 1000; 
+            lastTime = timestamp;
+
+            const targetAcid = parseInt(acidSlider.value); 
+            
+            // 1. Acid Pouring & Level Physics
+            if (acidLevel < targetAcid) {
+                acidLevel += 20 * dt; // Pouring speed
+                pourStream.setAttribute("opacity", "1");
+                funnelAcidCup.setAttribute("opacity", "1");
+            } else if (acidLevel > targetAcid) {
+                acidLevel -= 20 * dt; // Draining speed (if slider moved back)
+                pourStream.setAttribute("opacity", "0");
+                funnelAcidCup.setAttribute("opacity", "0");
+            } else {
+                pourStream.setAttribute("opacity", "0");
+                funnelAcidCup.setAttribute("opacity", "0");
+            }
+
+            // Update UI Texts
+            acidValText.innerText = Math.round(acidLevel) + " mL";
+            acidMetric.innerText = Math.round(acidLevel) + " mL";
+
+            // Visual Fill inside Woulfe's Bottle
+            // Max height = 120px (from base y=470 up to y=350)
+            const fillHeight = (acidLevel / 100) * 120;
+            bottleAcid.setAttribute('height', fillHeight);
+            bottleAcid.setAttribute('y', 470 - fillHeight);
+            
+            if (fillHeight > 0) {
+                acidSurface.setAttribute('opacity', "1");
+                acidSurface.setAttribute('d', `M -65 ${470 - fillHeight} L 65 ${470 - fillHeight}`);
+            } else {
+                acidSurface.setAttribute('opacity', "0");
+            }
+
+            // 2. Chemical Reaction Logic
+            // Reaction happens if acid covers marble chips (approx > 5%)
+            if (acidLevel > 5) {
+                if (acidLevel >= SUBMERGE_THRESHOLD) {
+                    funnelStatus.innerText = "Safe: Thistle funnel is submerged.";
+                    funnelStatus.className = "text-[10px] text-emerald-400";
+                    
+                    if (gasCollected < 100) {
+                        reactionStatus.innerText = "Effervescence! CO₂ flowing to jar.";
+                        reactionStatus.className = "text-sm font-bold text-sky-400 block animate-pulse";
+                        bubblingMixture.style.opacity = "1";
+                        
+                        // Spawn particles based on acid amount
+                        if (Math.random() < (acidLevel / 100)) {
+                            spawnParticle();
+                        }
+                    } else {
+                        reactionStatus.innerText = "Gas Jar is FULL!";
+                        reactionStatus.className = "text-sm font-bold text-emerald-400 block";
+                        bubblingMixture.style.opacity = "0";
+                    }
+                } else {
+                    funnelStatus.innerText = "WARNING: Thistle funnel NOT submerged!";
+                    funnelStatus.className = "text-[10px] text-red-400 font-bold animate-pulse";
+                    
+                    reactionStatus.innerText = "Reaction occurring... Gas Escaping!";
+                    reactionStatus.className = "text-sm font-bold text-red-400 block";
+                    bubblingMixture.style.opacity = "1";
+                    // Gas escapes, don't spawn particles into delivery tube
+                }
+            } else {
+                reactionStatus.innerText = "Add acid to start...";
+                reactionStatus.className = "text-sm font-bold text-slate-400 block";
+                funnelStatus.innerText = "Thistle funnel is dry.";
+                funnelStatus.className = "text-[10px] text-slate-500";
+                bubblingMixture.style.opacity = "0";
+            }
+
+            // 3. Move Particles along Delivery Tube Path
+            for (let i = activeParticles.length - 1; i >= 0; i--) {
+                let p = activeParticles[i];
+                p.distance += p.speed * dt;
+                
+                if (p.distance >= pathLen) {
+                    // Reached bottom of upright gas jar!
+                    p.el.remove();
+                    activeParticles.splice(i, 1);
+                    
+                    // Increase collected gas volume
+                    if (gasCollected < 100) {
+                        gasCollected += 0.5; 
+                        if (gasCollected > 100) gasCollected = 100;
+                        
+                        gasVolText.innerText = gasCollected.toFixed(0) + "%";
+                        
+                        // Visualize the upward displacement of air (Gas fills bottom-up)
+                        // Base y=475, Max height 255 (up to y=220)
+                        const gasHeight = (gasCollected / 100) * 255;
+                        co2GasFill.setAttribute('height', gasHeight);
+                        co2GasFill.setAttribute('y', 475 - gasHeight);
+                    }
+                } else {
+                    // Follow SVG Path exactly
+                    const point = deliveryPath.getPointAtLength(p.distance);
+                    const wobble = Math.sin((p.distance * 0.1) + p.wobbleOffset) * 2;
+                    p.el.setAttribute("cx", point.x + wobble); // Wobble left/right
+                    p.el.setAttribute("cy", point.y);
+                }
+            }
+
+            labAnimFrame = requestAnimationFrame(runLab);
+        }
+
+        // Reset Button
+        btnReset.addEventListener('click', () => {
+            acidSlider.value = 0;
+            gasCollected = 0;
+            
+            gasVolText.innerText = "0%";
+            co2GasFill.setAttribute('height', 0);
+            co2GasFill.setAttribute('y', 475);
+            
+            activeParticles.forEach(p => p.el.remove());
+            activeParticles = [];
+        });
+
+        // Start Physics Engine
+        labAnimFrame = requestAnimationFrame(runLab);
+
+    </script>
+</body>
+</html>
+
